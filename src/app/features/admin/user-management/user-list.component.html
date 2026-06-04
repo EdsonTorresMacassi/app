@@ -1,0 +1,264 @@
+<!-- Header de página -->
+<div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+  <div>
+    <h2 class="text-2xl font-bold text-slate-800 dark:text-white font-heading">
+      Gestión de Usuarios
+    </h2>
+    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+      {{ filteredUsers().length }} usuarios registrados en el sistema
+    </p>
+  </div>
+  <button *ngIf="authService.hasPermission('USER_CREATE')"
+          (click)="openCreateModal()"
+          class="inline-flex items-center justify-center gap-2 rounded-lg
+                 bg-corporate-primary py-2.5 px-5 text-sm font-semibold text-white
+                 hover:bg-opacity-90 transition-all shadow-sm hover:shadow-md
+                 hover:shadow-corporate-primary/30 active:scale-[0.98]">
+    <i class="fa-solid fa-plus text-xs"></i>
+    Nuevo Usuario
+  </button>
+</div>
+
+<!-- Error global -->
+<div *ngIf="error()"
+     class="mb-4 flex items-center gap-3 rounded-xl border border-rose-200
+            bg-rose-50 dark:bg-rose-900/20 dark:border-rose-800/40 p-4">
+  <i class="fa-solid fa-triangle-exclamation text-rose-500 flex-shrink-0"></i>
+  <span class="text-sm text-rose-700 dark:text-rose-400">{{ error() }}</span>
+  <button (click)="loadUsers()"
+          class="ml-auto text-xs text-rose-600 hover:underline font-medium">
+    Reintentar
+  </button>
+</div>
+
+<!-- Tabla card -->
+<div class="rounded-xl border border-slate-200 bg-white shadow-sm
+            dark:border-slate-700 dark:bg-slate-800 overflow-hidden">
+
+  <!-- Barra de herramientas -->
+  <div class="border-b border-slate-200 dark:border-slate-700 p-4 flex flex-col
+              sm:flex-row gap-3 justify-between items-center">
+    <div class="relative w-full sm:max-w-xs">
+      <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+        <i class="fa-solid fa-magnifying-glass text-sm"></i>
+      </span>
+      <input type="text"
+             placeholder="Buscar por nombre, email o usuario..."
+             [ngModel]="searchQuery()"
+             (ngModelChange)="searchQuery.set($event)"
+             class="w-full rounded-lg border border-slate-200 bg-slate-50
+                    dark:bg-slate-700 dark:border-slate-600 dark:text-white
+                    py-2.5 pl-9 pr-4 text-sm outline-none
+                    focus:border-corporate-primary focus:ring-2
+                    focus:ring-corporate-primary/20 transition-all
+                    placeholder-slate-400" />
+    </div>
+    <button (click)="loadUsers()"
+            class="flex items-center gap-2 text-sm text-slate-500
+                   hover:text-slate-700 dark:text-slate-400 dark:hover:text-white
+                   border border-slate-200 dark:border-slate-700 px-3.5 py-2.5
+                   rounded-lg transition-colors hover:bg-slate-50 dark:hover:bg-slate-700">
+      <i class="fa-solid fa-arrows-rotate text-xs"></i>
+      Actualizar
+    </button>
+  </div>
+
+  <!-- Loading skeleton -->
+  <div *ngIf="isLoading()" class="p-8 flex flex-col gap-4">
+    <div *ngFor="let i of [1,2,3]"
+         class="h-12 rounded-lg bg-slate-100 dark:bg-slate-700/50 animate-pulse">
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div *ngIf="!isLoading()" class="overflow-x-auto">
+    <table class="w-full text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap">
+      <thead class="bg-slate-50 dark:bg-slate-800/80 text-[11px] uppercase
+                    tracking-wider text-slate-400 border-b border-slate-200
+                    dark:border-slate-700">
+        <tr>
+          <th class="px-6 py-3.5 text-left font-semibold">Usuario</th>
+          <th class="px-6 py-3.5 text-left font-semibold">Documento</th>
+          <th class="px-6 py-3.5 text-left font-semibold">Rol</th>
+          <th class="px-6 py-3.5 text-left font-semibold">Perfil</th>
+          <th class="px-6 py-3.5 text-right font-semibold">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
+
+        <!-- Sin resultados -->
+        <tr *ngIf="filteredUsers().length === 0">
+          <td colspan="5" class="px-6 py-16 text-center">
+            <div class="flex flex-col items-center gap-3">
+              <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-700
+                          flex items-center justify-center">
+                <i class="fa-solid fa-users text-2xl text-slate-400"></i>
+              </div>
+              <p class="text-slate-500 dark:text-slate-400 text-sm">
+                No se encontraron usuarios
+              </p>
+            </div>
+          </td>
+        </tr>
+
+        <tr *ngFor="let user of filteredUsers()"
+            class="hover:bg-slate-50/80 dark:hover:bg-slate-800/60 transition-colors">
+
+          <!-- Usuario -->
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-corporate-primary/10 text-corporate-primary
+                          flex items-center justify-center font-bold text-sm flex-shrink-0">
+                {{ user.firstName.charAt(0).toUpperCase() }}
+              </div>
+              <div>
+                <p class="font-semibold text-slate-800 dark:text-white">
+                  {{ user.firstName }} {{ user.lastName }}
+                </p>
+                <p class="text-xs text-slate-400">{{ user.email }}</p>
+              </div>
+            </div>
+          </td>
+
+          <!-- Documento -->
+          <td class="px-6 py-4">
+            <span class="font-mono text-xs">
+              {{ user.docType || '—' }}: {{ user.docNumber || '—' }}
+            </span>
+          </td>
+
+          <!-- Rol -->
+          <td class="px-6 py-4">
+            <span *ngFor="let role of user.roles"
+                  class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1
+                         text-xs font-semibold mr-1
+                         bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400
+                         border border-blue-200/50 dark:border-blue-800/50">
+              <i class="fa-solid fa-shield text-[9px]"></i>
+              {{ role }}
+            </span>
+            <span *ngIf="user.roles.length === 0"
+                  class="text-xs text-slate-400">Sin rol</span>
+          </td>
+
+          <!-- Estado perfil -->
+          <td class="px-6 py-4">
+            <span *ngIf="user.profileComplete"
+                  class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1
+                         text-xs font-semibold bg-emerald-50 text-emerald-700
+                         dark:bg-emerald-900/30 dark:text-emerald-400
+                         border border-emerald-200/50">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              Completo
+            </span>
+            <span *ngIf="!user.profileComplete"
+                  class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1
+                         text-xs font-semibold bg-amber-50 text-amber-700
+                         dark:bg-amber-900/30 dark:text-amber-400
+                         border border-amber-200/50">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+              Incompleto
+            </span>
+          </td>
+
+          <!-- Acciones -->
+          <td class="px-6 py-4">
+            <div class="flex items-center justify-end gap-1">
+              <button *ngIf="authService.hasPermission('USER_UPDATE')"
+                      (click)="openEditModal(user)"
+                      title="Editar usuario"
+                      class="w-8 h-8 flex items-center justify-center rounded-lg
+                             text-slate-400 hover:text-amber-500 hover:bg-amber-50
+                             dark:hover:bg-amber-900/20 transition-all">
+                <i class="fa-solid fa-pen-to-square text-sm"></i>
+              </button>
+              <button *ngIf="authService.hasPermission('USER_DELETE')"
+                      (click)="openDisableModal(user)"
+                      title="Deshabilitar usuario"
+                      class="w-8 h-8 flex items-center justify-center rounded-lg
+                             text-slate-400 hover:text-rose-500 hover:bg-rose-50
+                             dark:hover:bg-rose-900/20 transition-all">
+                <i class="fa-solid fa-ban text-sm"></i>
+              </button>
+            </div>
+          </td>
+
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Footer de tabla -->
+  <div *ngIf="!isLoading() && filteredUsers().length > 0"
+       class="border-t border-slate-200 dark:border-slate-700 px-6 py-4
+              flex items-center justify-between bg-white dark:bg-slate-800">
+    <p class="text-sm text-slate-500 dark:text-slate-400">
+      Mostrando
+      <span class="font-semibold text-slate-700 dark:text-slate-200">
+        {{ filteredUsers().length }}
+      </span>
+      de
+      <span class="font-semibold text-slate-700 dark:text-slate-200">
+        {{ users().length }}
+      </span>
+      registros
+    </p>
+  </div>
+
+</div>
+
+<!-- Modal crear usuario -->
+<div *ngIf="showCreateModal()"
+     class="fixed inset-0 z-50 flex items-center justify-center bg-black/50
+            backdrop-blur-sm p-4">
+  <app-create-user-form
+    (onSuccess)="onUserCreated()"
+    (onCancel)="closeCreateModal()">
+  </app-create-user-form>
+</div>
+
+<!-- Modal editar usuario -->
+<div *ngIf="showEditModal() && selectedUserForEdit()"
+     class="fixed inset-0 z-50 flex items-center justify-center bg-black/50
+            backdrop-blur-sm p-4">
+  <app-edit-user-form
+    [personId]="selectedUserForEdit()!"
+    (onSuccess)="onUserEdited()"
+    (onCancel)="closeEditModal()">
+  </app-edit-user-form>
+</div>
+
+<!-- Modal confirmar deshabilitar -->
+<div *ngIf="showDisableModal()"
+     class="fixed inset-0 z-50 flex items-center justify-center bg-black/50
+            backdrop-blur-sm p-4">
+  <div class="w-full max-w-md rounded-2xl bg-white dark:bg-slate-800 shadow-2xl p-6">
+    <div class="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl
+                bg-rose-50 dark:bg-rose-900/20 mx-auto">
+      <i class="fa-solid fa-triangle-exclamation text-2xl text-rose-500"></i>
+    </div>
+    <h3 class="text-lg font-bold text-slate-800 dark:text-white text-center mb-2">
+      Deshabilitar usuario
+    </h3>
+    <p class="text-sm text-slate-500 dark:text-slate-400 text-center mb-6">
+      ¿Estás seguro de deshabilitar a
+      <span class="font-semibold text-slate-700 dark:text-slate-200">
+        {{ selectedUser()?.firstName }} {{ selectedUser()?.lastName }}
+      </span>?
+      El usuario perderá acceso al sistema inmediatamente.
+    </p>
+    <div class="flex gap-3">
+      <button (click)="closeDisableModal()"
+              class="flex-1 rounded-lg border border-slate-200 dark:border-slate-700
+                     px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300
+                     hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">
+        Cancelar
+      </button>
+      <button (click)="confirmDisable()"
+              class="flex-1 rounded-lg bg-rose-500 px-4 py-2.5 text-sm font-semibold
+                     text-white hover:bg-rose-600 transition-all shadow-sm">
+        Sí, deshabilitar
+      </button>
+    </div>
+  </div>
+</div>

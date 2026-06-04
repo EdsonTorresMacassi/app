@@ -1,0 +1,108 @@
+<div class="w-full max-w-2xl rounded-2xl bg-white dark:bg-slate-800 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+
+  <!-- Header del modal -->
+  <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 px-6 py-4 bg-slate-50/50 dark:bg-slate-800/50 flex-shrink-0">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center">
+        <i class="fa-solid fa-pen-to-square text-amber-500 text-sm"></i>
+      </div>
+      <div>
+        <h3 class="font-bold text-slate-800 dark:text-white">Editar Usuario</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400">
+          Actualización de datos personales
+        </p>
+      </div>
+    </div>
+    <button (click)="onCancel.emit()" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+
+  <!-- Loading Skeleton -->
+  <div *ngIf="isLoading()" class="p-8 flex flex-col gap-4 flex-1">
+     <div class="h-10 bg-slate-100 dark:bg-slate-700/50 rounded-lg animate-pulse"></div>
+     <div class="h-10 bg-slate-100 dark:bg-slate-700/50 rounded-lg animate-pulse w-3/4"></div>
+     <div class="h-10 bg-slate-100 dark:bg-slate-700/50 rounded-lg animate-pulse w-1/2"></div>
+  </div>
+
+  <!-- Formulario con scroll -->
+  <form *ngIf="!isLoading()" [formGroup]="form" (ngSubmit)="submit()" class="overflow-y-auto flex-1 p-6 space-y-5">
+    <!-- Error global -->
+    <div *ngIf="error()" class="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 dark:bg-rose-900/20 dark:border-rose-800/40 p-3.5">
+      <i class="fa-solid fa-triangle-exclamation text-rose-500 flex-shrink-0 mt-0.5"></i>
+      <span class="text-sm text-rose-700 dark:text-rose-400">{{ error() }}</span>
+    </div>
+
+    <!-- Sección: Datos personales -->
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">Datos personales</p>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nombres *</label>
+          <input formControlName="firstName" type="text" class="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 px-4 py-2.5 text-sm text-slate-800 dark:text-white outline-none focus:border-corporate-primary focus:ring-2 focus:ring-corporate-primary/20 transition-all" [class.border-rose-400]="form.controls.firstName.invalid && form.controls.firstName.touched" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Apellidos *</label>
+          <input formControlName="lastName" type="text" class="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 px-4 py-2.5 text-sm text-slate-800 dark:text-white outline-none focus:border-corporate-primary focus:ring-2 focus:ring-corporate-primary/20 transition-all" [class.border-rose-400]="form.controls.lastName.invalid && form.controls.lastName.touched" />
+        </div>
+        <div class="col-span-2">
+          <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Segundo apellido</label>
+          <input formControlName="secondLastName" type="text" class="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 px-4 py-2.5 text-sm text-slate-800 dark:text-white outline-none focus:border-corporate-primary focus:ring-2 focus:ring-corporate-primary/20 transition-all" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección: Documento -->
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">Documento de identidad</p>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Tipo *</label>
+          <select formControlName="docType" class="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 px-4 py-2.5 text-sm text-slate-800 dark:text-white outline-none focus:border-corporate-primary transition-all" [class.border-rose-400]="form.controls.docType.invalid && form.controls.docType.touched">
+            <option value="">Seleccionar...</option>
+            <option value="CI">Cédula de Identidad</option>
+            <option value="RIF">RIF</option>
+            <option value="PASSPORT">Pasaporte</option>
+            <option value="DNI">DNI</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Número *</label>
+          <input formControlName="docNumber" type="text" class="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 px-4 py-2.5 text-sm text-slate-800 dark:text-white outline-none focus:border-corporate-primary focus:ring-2 focus:ring-corporate-primary/20 transition-all" [class.border-rose-400]="form.controls.docNumber.invalid && form.controls.docNumber.touched" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección: Contacto -->
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">Contacto</p>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Teléfono</label>
+          <input formControlName="phone" type="tel" class="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 px-4 py-2.5 text-sm text-slate-800 dark:text-white outline-none focus:border-corporate-primary transition-all" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nacionalidad</label>
+          <input formControlName="nationality" type="text" class="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 px-4 py-2.5 text-sm text-slate-800 dark:text-white outline-none focus:border-corporate-primary transition-all" />
+        </div>
+      </div>
+    </div>
+
+  </form>
+
+  <!-- Footer con botones -->
+  <div *ngIf="!isLoading()" class="flex gap-3 border-t border-slate-200 dark:border-slate-700 px-6 py-4 bg-slate-50/50 dark:bg-slate-800/50 flex-shrink-0">
+    <button type="button" (click)="onCancel.emit()" class="flex-1 rounded-lg border border-slate-200 dark:border-slate-700 px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
+      Cancelar
+    </button>
+    <button (click)="submit()" [disabled]="isSaving()" class="flex-1 flex items-center justify-center gap-2 rounded-lg bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-600 transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed">
+      <svg *ngIf="isSaving()" class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+      </svg>
+      <i *ngIf="!isSaving()" class="fa-solid fa-floppy-disk text-sm"></i>
+      {{ isSaving() ? 'Guardando...' : 'Guardar Cambios' }}
+    </button>
+  </div>
+
+</div>

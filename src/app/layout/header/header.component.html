@@ -1,0 +1,116 @@
+<header class="sticky top-0 z-30 flex w-full h-16 bg-white dark:bg-[#1C2434] border-b border-slate-200 dark:border-slate-800 drop-shadow-sm transition-colors duration-300">
+  <div class="flex flex-grow items-center justify-between px-4 py-0 h-full md:px-6 lg:px-8">
+    
+    <!-- Left Section: Hamburger & Breadcrumbs -->
+    <div class="flex items-center gap-4 h-full">
+      
+      <!-- Hamburger Toggle Button (Mobile) -->
+      <button (click)="toggleSidebarMobile()" class="block lg:hidden rounded-md border border-slate-200 bg-slate-50 p-1.5 text-slate-500 hover:text-corporate-primary hover:border-corporate-primary/30 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors">
+        <i class="fa-solid fa-bars h-5 w-5 flex items-center justify-center"></i>
+      </button>
+
+      <!-- Hamburger Toggle Button (Desktop) -->
+      <button (click)="toggleSidebarDesktop()" class="hidden lg:flex items-center justify-center rounded-md border border-slate-200 bg-slate-50 w-8 h-8 text-slate-500 hover:text-corporate-primary hover:border-corporate-primary/30 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+
+      <!-- Breadcrumbs -->
+      <nav class="hidden sm:flex items-center space-x-2 text-[13px] font-medium text-slate-500 dark:text-slate-400 pl-2 font-sans">
+        <ng-container *ngFor="let crumb of breadcrumbs(); let i = index; let last = last">
+          <a [routerLink]="crumb.url" class="hover:text-corporate-primary dark:hover:text-white transition-colors" [ngClass]="{'text-slate-800 dark:text-slate-200 font-semibold': last}">
+            {{ crumb.label }}
+          </a>
+          <span *ngIf="!last" class="text-slate-300 dark:text-slate-600 select-none">/</span>
+        </ng-container>
+      </nav>
+
+    </div>
+
+    <!-- Right Section: Actions & Profile -->
+    <div class="flex items-center gap-3">
+      
+      <!-- Theme Toggle Externo (Opcional) -->
+      <button (click)="toggleTheme()" class="hidden md:flex items-center justify-center w-9 h-9 rounded-full bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-corporate-primary dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700">
+        <i [class]="isDarkMode() ? 'fa-solid fa-sun' : 'fa-regular fa-moon'"></i>
+      </button>
+
+      <!-- Divider -->
+      <div class="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-1 hidden sm:block"></div>
+
+      <!-- User Area -->
+      <div class="relative">
+        <button (click)="toggleDropdown()" class="flex items-center gap-3 cursor-pointer px-3 py-1.5 rounded-lg transition-all duration-200 border border-transparent"
+                [ngClass]="{
+                  'bg-slate-100 border-slate-200 dark:bg-slate-800 dark:border-slate-700 shadow-sm': isDropdownOpen(),
+                  'hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:border-slate-200 dark:hover:border-slate-700': !isDropdownOpen()
+                }">
+          <span class="hidden text-right lg:block">
+            <span class="block text-[13px] font-semibold text-slate-800 dark:text-white font-sans">{{ currentUser()?.person?.firstName }}</span>
+            <span class="block text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ currentUser()?.roles?.[0] }}</span>
+          </span>
+          <span class="h-9 w-9 rounded-md bg-corporate-primary flex items-center justify-center text-white text-sm font-bold shadow-sm transition-transform hover:scale-105">
+            {{ currentUser()?.person?.firstName?.charAt(0) || 'U' }}
+          </span>
+          <i class="fa-solid fa-chevron-down hidden sm:block text-[10px] text-slate-400 transition-transform duration-200" [ngClass]="{'rotate-180': isDropdownOpen()}"></i>
+        </button>
+
+        <!-- Dropdown Menu Overlay for closing -->
+        <div *ngIf="isDropdownOpen()" (click)="closeDropdown()" class="fixed inset-0 z-40 bg-transparent"></div>
+
+        <!-- Dropdown Menu Content -->
+        <div *ngIf="isDropdownOpen()" class="absolute right-0 mt-3 flex w-64 flex-col rounded-xl border border-slate-100 bg-white shadow-2xl dark:border-slate-700 dark:bg-[#1E293B] z-50 overflow-hidden transform origin-top-right transition-all font-sans ring-1 ring-black ring-opacity-5">
+          
+          <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-800/30">
+            <p class="text-[10px] uppercase tracking-wider text-slate-500 mb-1 font-bold">Conectado como</p>
+            <p class="text-sm font-semibold text-slate-800 dark:text-white truncate">{{ currentUser()?.person?.email }}</p>
+          </div>
+
+          <div class="p-4 border-b border-slate-100 dark:border-slate-700/50">
+            <p class="text-[11px] uppercase tracking-wider text-slate-500 mb-3 font-semibold">Apariencia</p>
+            
+            <!-- Color Selector Dinámico -->
+            <div class="flex items-center gap-2 mb-4">
+              <button (click)="setAccent('emerald')" class="w-6 h-6 rounded-full bg-[#10B981] ring-offset-2 dark:ring-offset-[#1E293B] transition-all" [ngClass]="{'ring-2 ring-[#10B981]': currentAccent() === 'emerald', 'hover:scale-110': currentAccent() !== 'emerald'}" title="Verde Esmeralda"></button>
+              <button (click)="setAccent('blue')" class="w-6 h-6 rounded-full bg-blue-600 ring-offset-2 dark:ring-offset-[#1E293B] transition-all" [ngClass]="{'ring-2 ring-blue-600': currentAccent() === 'blue', 'hover:scale-110': currentAccent() !== 'blue'}" title="Azul Corporativo"></button>
+              <button (click)="setAccent('purple')" class="w-6 h-6 rounded-full bg-purple-600 ring-offset-2 dark:ring-offset-[#1E293B] transition-all" [ngClass]="{'ring-2 ring-purple-600': currentAccent() === 'purple', 'hover:scale-110': currentAccent() !== 'purple'}" title="Púrpura"></button>
+              <button (click)="setAccent('slate')" class="w-6 h-6 rounded-full bg-slate-500 ring-offset-2 dark:ring-offset-[#1E293B] transition-all" [ngClass]="{'ring-2 ring-slate-500': currentAccent() === 'slate', 'hover:scale-110': currentAccent() !== 'slate'}" title="Monocromático"></button>
+            </div>
+
+            <!-- Dark Mode Switch -->
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-slate-600 dark:text-slate-300 font-medium flex items-center gap-2">
+                <i class="fa-solid fa-moon text-slate-400"></i> Modo Oscuro
+              </span>
+              <button (click)="toggleTheme()" class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none" [ngClass]="{'bg-corporate-primary': isDarkMode(), 'bg-slate-300 dark:bg-slate-600': !isDarkMode()}">
+                <!-- Toggle visual -->
+                <span class="inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform" [ngClass]="{'translate-x-4': isDarkMode(), 'translate-x-1': !isDarkMode()}"></span>
+              </button>
+            </div>
+          </div>
+
+          <ul class="flex flex-col py-2 px-2">
+            <li>
+              <a href="#" class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 hover:text-corporate-primary dark:hover:bg-slate-800/50 dark:hover:text-white transition-colors">
+                <i class="fa-regular fa-user text-slate-400 group-hover:text-corporate-primary"></i> Mi Perfil
+              </a>
+            </li>
+            <li>
+              <a href="#" class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 hover:text-corporate-primary dark:hover:bg-slate-800/50 dark:hover:text-white transition-colors">
+                <i class="fa-solid fa-gear text-slate-400 group-hover:text-corporate-primary"></i> Configuración
+              </a>
+            </li>
+          </ul>
+
+          <div class="px-2 pb-2">
+            <div class="h-px w-full bg-slate-100 dark:bg-slate-700/50 my-1"></div>
+            <button (click)="logout()" class="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10 transition-colors">
+              <i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión
+            </button>
+          </div>
+          
+        </div>
+      </div>
+
+    </div>
+  </div>
+</header>

@@ -1,0 +1,146 @@
+<!-- Saludo personalizado -->
+<div class="mb-8">
+  <h1 class="text-2xl font-bold text-slate-800 dark:text-white font-heading">
+    ¡Bienvenido, {{ currentUser()?.person?.firstName || 'Usuario' }}!
+  </h1>
+  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+    Aquí tienes un resumen del estado actual del sistema.
+  </p>
+</div>
+
+<!-- KPI Cards -->
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+  <div *ngFor="let kpi of kpis"
+       class="group rounded-xl border border-slate-200 bg-white p-6 shadow-sm
+              dark:border-slate-700 dark:bg-slate-800
+              transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 cursor-default">
+    <div class="flex items-start justify-between">
+      <div class="flex h-12 w-12 items-center justify-center rounded-xl shadow-sm transition-transform group-hover:scale-110"
+           [ngClass]="{
+             'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400': kpi.color === 'blue',
+             'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400': kpi.color === 'indigo',
+             'bg-rose-50 dark:bg-rose-900/30 text-rose-500 dark:text-rose-400': kpi.color === 'rose',
+             'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400': kpi.color === 'emerald'
+           }">
+        <i [class]="kpi.icon" class="text-lg"></i>
+      </div>
+      <span class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-bold"
+            [ngClass]="{
+              'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400': kpi.isPositive,
+              'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400': !kpi.isPositive
+            }">
+        <i [class]="kpi.isPositive ? 'fa-solid fa-arrow-trend-up' : 'fa-solid fa-arrow-trend-down'" class="text-[10px]"></i>
+        {{ kpi.change }}
+      </span>
+    </div>
+    <div class="mt-5">
+      <p class="text-sm font-medium text-slate-500 dark:text-slate-400">{{ kpi.title }}</p>
+      <h4 class="mt-1 text-2xl font-bold text-slate-800 dark:text-white tracking-tight">{{ kpi.value }}</h4>
+    </div>
+  </div>
+</div>
+
+<!-- Información del perfil del usuario autenticado -->
+<div class="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
+
+  <!-- Card: Perfil -->
+  <div class="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800 overflow-hidden">
+    <div class="border-b border-slate-200 dark:border-slate-700 px-6 py-4 bg-slate-50/50 dark:bg-slate-800/50">
+      <h3 class="font-semibold text-slate-800 dark:text-white flex items-center gap-2 text-sm">
+        <i class="fa-solid fa-user-circle text-corporate-primary"></i>
+        Mi Perfil
+      </h3>
+    </div>
+    <div class="p-6">
+      <div class="flex items-center gap-4 mb-5">
+        <div class="w-14 h-14 rounded-xl bg-corporate-primary flex items-center justify-center text-white text-xl font-bold shadow-sm flex-shrink-0">
+          {{ currentUser()?.person?.firstName?.charAt(0) || 'U' }}
+        </div>
+        <div>
+          <p class="font-semibold text-slate-800 dark:text-white">
+            {{ currentUser()?.person?.firstName }} {{ currentUser()?.person?.lastName }}
+          </p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            {{ currentUser()?.person?.email }}
+          </p>
+        </div>
+      </div>
+      <div class="space-y-2.5">
+        <div class="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+          <span class="text-xs text-slate-500 dark:text-slate-400">Usuario</span>
+          <span class="text-xs font-medium text-slate-700 dark:text-slate-300 font-mono">
+            {{ currentUser()?.username }}
+          </span>
+        </div>
+        <div class="flex items-center justify-between py-2">
+          <span class="text-xs text-slate-500 dark:text-slate-400">Rol activo</span>
+          <span class="inline-flex items-center gap-1 rounded-full bg-corporate-primary/10 text-corporate-primary px-2.5 py-0.5 text-xs font-semibold">
+            <i class="fa-solid fa-shield text-[10px]"></i>
+            {{ currentUser()?.roles?.[0] }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card: Permisos -->
+  <div class="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800 overflow-hidden">
+    <div class="border-b border-slate-200 dark:border-slate-700 px-6 py-4 bg-slate-50/50 dark:bg-slate-800/50">
+      <h3 class="font-semibold text-slate-800 dark:text-white flex items-center gap-2 text-sm">
+        <i class="fa-solid fa-key text-corporate-primary"></i>
+        Mis Permisos
+        <span class="ml-auto text-xs text-slate-400 font-normal">
+          {{ currentUser()?.permissions?.length || 0 }} activos
+        </span>
+      </h3>
+    </div>
+    <div class="p-4 max-h-48 overflow-y-auto">
+      <div class="flex flex-wrap gap-1.5">
+        <span *ngFor="let perm of currentUser()?.permissions"
+              class="inline-flex items-center rounded-md bg-slate-100 dark:bg-slate-700 px-2 py-0.5 text-[10px] font-mono font-medium text-slate-600 dark:text-slate-300">
+          {{ perm }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card: Acceso Rápido -->
+  <div class="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800 overflow-hidden">
+    <div class="border-b border-slate-200 dark:border-slate-700 px-6 py-4 bg-slate-50/50 dark:bg-slate-800/50">
+      <h3 class="font-semibold text-slate-800 dark:text-white flex items-center gap-2 text-sm">
+        <i class="fa-solid fa-bolt text-corporate-primary"></i>
+        Acceso Rápido
+      </h3>
+    </div>
+    <div class="p-4 space-y-2">
+      <a *ngIf="currentUser()?.permissions?.includes('USER_READ')"
+         routerLink="/admin/users"
+         class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-corporate-primary transition-colors group">
+        <i class="fa-solid fa-users w-4 text-center text-slate-400 group-hover:text-corporate-primary transition-colors"></i>
+        Gestión de Usuarios
+        <i class="fa-solid fa-arrow-right ml-auto text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+      </a>
+      <a *ngIf="currentUser()?.permissions?.includes('ROLE_READ')"
+         routerLink="/admin/roles"
+         class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-corporate-primary transition-colors group">
+        <i class="fa-solid fa-key w-4 text-center text-slate-400 group-hover:text-corporate-primary transition-colors"></i>
+        Roles y Permisos
+        <i class="fa-solid fa-arrow-right ml-auto text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+      </a>
+      <a *ngIf="currentUser()?.permissions?.includes('REPORT_VIEW')"
+         routerLink="/reports/analytics"
+         class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-corporate-primary transition-colors group">
+        <i class="fa-solid fa-chart-line w-4 text-center text-slate-400 group-hover:text-corporate-primary transition-colors"></i>
+        Ver Analítica
+        <i class="fa-solid fa-arrow-right ml-auto text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+      </a>
+      <p *ngIf="!currentUser()?.permissions?.includes('USER_READ') &&
+                !currentUser()?.permissions?.includes('ROLE_READ') &&
+                !currentUser()?.permissions?.includes('REPORT_VIEW')"
+         class="text-xs text-slate-400 text-center py-4">
+        No hay accesos rápidos disponibles
+      </p>
+    </div>
+  </div>
+
+</div>

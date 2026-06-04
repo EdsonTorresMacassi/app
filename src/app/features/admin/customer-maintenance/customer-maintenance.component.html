@@ -1,0 +1,166 @@
+<div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+  <div>
+    <h2 class="text-2xl font-bold text-slate-800 dark:text-white font-heading">
+      Gestión de Usuarios
+    </h2>
+    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+      Administra los usuarios del sistema y sus roles de acceso.
+    </p>
+  </div>
+  <button class="inline-flex items-center justify-center gap-2 rounded-lg bg-corporate-primary py-2.5 px-5
+                 text-sm font-semibold text-white hover:bg-opacity-90 transition-all shadow-sm
+                 hover:shadow-md hover:shadow-corporate-primary/30 active:scale-[0.98]">
+    <i class="fa-solid fa-plus text-xs"></i>
+    Nuevo Usuario
+  </button>
+</div>
+
+<!-- Tabla -->
+<div class="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800 overflow-hidden">
+
+  <!-- Barra de herramientas -->
+  <div class="border-b border-slate-200 dark:border-slate-700 p-4 flex flex-col sm:flex-row gap-3 justify-between items-center bg-white dark:bg-slate-800">
+    <div class="relative w-full sm:max-w-xs">
+      <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+        <i class="fa-solid fa-magnifying-glass text-sm"></i>
+      </span>
+      <input type="text" placeholder="Buscar usuario..."
+             class="w-full rounded-lg border border-slate-200 bg-slate-50 dark:bg-slate-700 dark:border-slate-600
+                    dark:text-white py-2 pl-9 pr-4 text-sm outline-none
+                    focus:border-corporate-primary focus:ring-2 focus:ring-corporate-primary/20
+                    transition-all placeholder-slate-400" />
+    </div>
+    <div class="flex items-center gap-2 self-end sm:self-auto">
+      <button class="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white
+                     border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-lg transition-colors
+                     hover:bg-slate-50 dark:hover:bg-slate-700">
+        <i class="fa-solid fa-filter text-xs"></i>
+        Filtrar
+      </button>
+      <button class="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white
+                     border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-lg transition-colors
+                     hover:bg-slate-50 dark:hover:bg-slate-700">
+        <i class="fa-solid fa-download text-xs"></i>
+        Exportar
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabla con scroll horizontal -->
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap">
+      <thead class="bg-slate-50 dark:bg-slate-800/80 text-[11px] uppercase tracking-wider
+                    text-slate-400 dark:text-slate-500 border-b border-slate-200 dark:border-slate-700">
+        <tr>
+          <th class="px-6 py-3.5 text-left font-semibold">Usuario</th>
+          <th class="px-6 py-3.5 text-left font-semibold">Email</th>
+          <th class="px-6 py-3.5 text-left font-semibold">Rol</th>
+          <th class="px-6 py-3.5 text-left font-semibold">Estado</th>
+          <th class="px-6 py-3.5 text-right font-semibold">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
+        <tr *ngFor="let user of users()"
+            class="hover:bg-slate-50/80 dark:hover:bg-slate-800/60 transition-colors">
+
+          <!-- Usuario -->
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg bg-corporate-primary/10 text-corporate-primary
+                          flex items-center justify-center font-bold text-sm flex-shrink-0">
+                {{ user.firstName.charAt(0) }}
+              </div>
+              <div>
+                <p class="font-semibold text-slate-800 dark:text-white">
+                  {{ user.firstName }} {{ user.lastName }}
+                </p>
+                <p class="text-[11px] text-slate-400 font-mono">{{ user.id.substring(0, 8) }}...</p>
+              </div>
+            </div>
+          </td>
+
+          <!-- Email -->
+          <td class="px-6 py-4 text-slate-500 dark:text-slate-400">{{ user.email }}</td>
+
+          <!-- Rol -->
+          <td class="px-6 py-4">
+            <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold
+                         bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400
+                         border border-blue-200/50 dark:border-blue-800/50">
+              <i class="fa-solid fa-shield text-[9px]"></i>
+              {{ user.roleName }}
+            </span>
+          </td>
+
+          <!-- Estado -->
+          <td class="px-6 py-4">
+            <span *ngIf="user.accountStatus === 'ACTIVE'"
+                  class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold
+                         bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400
+                         border border-emerald-200/50 dark:border-emerald-800/50">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              Activo
+            </span>
+            <span *ngIf="user.accountStatus !== 'ACTIVE'"
+                  class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold
+                         bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400
+                         border border-slate-200 dark:border-slate-600">
+              <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+              Inactivo
+            </span>
+          </td>
+
+          <!-- Acciones -->
+          <td class="px-6 py-4">
+            <div class="flex items-center justify-end gap-1">
+              <button title="Ver detalle"
+                      class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400
+                             hover:text-corporate-primary hover:bg-slate-100 dark:hover:bg-slate-700
+                             transition-all">
+                <i class="fa-solid fa-eye text-sm"></i>
+              </button>
+              <button title="Editar"
+                      class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400
+                             hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20
+                             transition-all">
+                <i class="fa-solid fa-pen-to-square text-sm"></i>
+              </button>
+              <button title="Desactivar"
+                      class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400
+                             hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20
+                             transition-all">
+                <i class="fa-solid fa-ban text-sm"></i>
+              </button>
+            </div>
+          </td>
+
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Paginación -->
+  <div class="border-t border-slate-200 dark:border-slate-700 px-6 py-4 flex flex-col sm:flex-row
+              items-center justify-between gap-4 bg-white dark:bg-slate-800">
+    <p class="text-sm text-slate-500 dark:text-slate-400">
+      Mostrando <span class="font-semibold text-slate-700 dark:text-slate-200">{{ users().length }}</span>
+      de <span class="font-semibold text-slate-700 dark:text-slate-200">{{ users().length }}</span> registros
+    </p>
+    <div class="flex items-center gap-1.5">
+      <button disabled
+              class="px-3.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-sm
+                     font-medium text-slate-400 cursor-not-allowed transition-all">
+        Anterior
+      </button>
+      <button class="w-8 h-8 rounded-lg flex items-center justify-center bg-corporate-primary text-white text-sm font-semibold shadow-sm">
+        1
+      </button>
+      <button class="px-3.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-sm
+                     font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700
+                     transition-all">
+        Siguiente
+      </button>
+    </div>
+  </div>
+
+</div>

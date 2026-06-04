@@ -1,0 +1,158 @@
+<div class="flex h-screen w-full items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 px-4">
+  <div class="flex w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-slate-800 animate-fade-in">
+
+    <!-- Panel de Branding -->
+    <div class="hidden lg:flex w-1/2 flex-col items-center justify-center bg-corporate-primary relative overflow-hidden p-12">
+      <!-- Círculos decorativos -->
+      <div class="absolute -top-16 -left-16 w-64 h-64 rounded-full bg-white/10"></div>
+      <div class="absolute -bottom-16 -right-16 w-80 h-80 rounded-full bg-white/5"></div>
+      <div class="absolute top-1/4 right-8 w-32 h-32 rounded-full bg-white/10"></div>
+
+      <div class="relative z-10 text-center text-white">
+        <div class="mb-6 mx-auto w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/30">
+          <i class="fa-solid fa-layer-group text-3xl text-white"></i>
+        </div>
+        <h2 class="mb-3 text-4xl font-black tracking-tight font-heading">Sistema</h2>
+        <p class="text-white/70 text-sm leading-relaxed max-w-xs">
+          La plataforma empresarial para la gestión centralizada y segura de tu organización.
+        </p>
+        <div class="mt-8 flex items-center justify-center gap-6 text-white/60 text-xs">
+          <span class="flex items-center gap-1.5">
+            <i class="fa-solid fa-shield-halved"></i> Seguro
+          </span>
+          <span class="flex items-center gap-1.5">
+            <i class="fa-solid fa-bolt"></i> Rápido
+          </span>
+          <span class="flex items-center gap-1.5">
+            <i class="fa-solid fa-infinity"></i> Escalable
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel del Formulario -->
+    <div class="w-full p-8 sm:p-12 lg:w-1/2 flex flex-col justify-center">
+      <!-- Logo Mobile -->
+      <div class="lg:hidden mb-6 flex justify-center">
+        <div class="w-14 h-14 bg-corporate-primary rounded-xl flex items-center justify-center shadow-lg">
+          <i class="fa-solid fa-layer-group text-2xl text-white"></i>
+        </div>
+      </div>
+
+      <div class="mb-8">
+        <h3 class="text-2xl font-bold text-slate-800 dark:text-white font-heading">
+          Bienvenido de nuevo
+        </h3>
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          Ingresa tus credenciales para acceder al sistema
+        </p>
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-5" novalidate>
+
+        <!-- Campo Usuario -->
+        <div>
+          <label class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">
+            Usuario
+          </label>
+          <div class="relative">
+            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+              <i class="fa-solid fa-user text-sm"></i>
+            </span>
+            <input
+              type="text"
+              formControlName="username"
+              placeholder="Ingresa tu usuario"
+              autocomplete="username"
+              class="w-full rounded-lg border py-3 pl-10 pr-4 text-sm outline-none transition-all duration-200
+                     bg-slate-50 dark:bg-slate-700/50
+                     text-slate-800 dark:text-white
+                     placeholder-slate-400 dark:placeholder-slate-500
+                     border-slate-200 dark:border-slate-600
+                     focus:border-corporate-primary focus:ring-2 focus:ring-corporate-primary/20
+                     focus:bg-white dark:focus:bg-slate-700"
+              [class.border-rose-400]="loginForm.controls.username.invalid && loginForm.controls.username.touched"
+              [class.focus:ring-rose-200]="loginForm.controls.username.invalid && loginForm.controls.username.touched"
+            />
+          </div>
+          <p *ngIf="loginForm.controls.username.invalid && loginForm.controls.username.touched"
+             class="mt-1.5 flex items-center gap-1 text-xs text-rose-500">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            Usuario requerido (mínimo 3 caracteres).
+          </p>
+        </div>
+
+        <!-- Campo Contraseña con toggle -->
+        <div>
+          <label class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">
+            Contraseña
+          </label>
+          <div class="relative">
+            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+              <i class="fa-solid fa-lock text-sm"></i>
+            </span>
+            <input
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="Ingresa tu contraseña"
+              autocomplete="current-password"
+              class="w-full rounded-lg border py-3 pl-10 pr-12 text-sm outline-none transition-all duration-200
+                     bg-slate-50 dark:bg-slate-700/50
+                     text-slate-800 dark:text-white
+                     placeholder-slate-400 dark:placeholder-slate-500
+                     border-slate-200 dark:border-slate-600
+                     focus:border-corporate-primary focus:ring-2 focus:ring-corporate-primary/20
+                     focus:bg-white dark:focus:bg-slate-700"
+              [class.border-rose-400]="loginForm.controls.password.invalid && loginForm.controls.password.touched"
+            />
+            <button
+              type="button"
+              (click)="togglePasswordVisibility()"
+              class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+              tabindex="-1">
+              <i [class]="showPassword() ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'" class="text-sm"></i>
+            </button>
+          </div>
+          <p *ngIf="loginForm.controls.password.invalid && loginForm.controls.password.touched"
+             class="mt-1.5 flex items-center gap-1 text-xs text-rose-500">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            Contraseña requerida (mínimo 6 caracteres).
+          </p>
+        </div>
+
+        <!-- Mensaje de error global -->
+        <div *ngIf="errorMessage()"
+             class="flex items-start gap-3 rounded-lg border border-rose-200 bg-rose-50 p-3.5
+                    dark:border-rose-800/40 dark:bg-rose-900/20">
+          <i class="fa-solid fa-triangle-exclamation text-rose-500 mt-0.5 flex-shrink-0"></i>
+          <span class="text-sm text-rose-700 dark:text-rose-400">{{ errorMessage() }}</span>
+        </div>
+
+        <!-- Botón Submit -->
+        <button
+          type="submit"
+          [disabled]="isLoading()"
+          class="relative flex w-full items-center justify-center gap-2 rounded-lg bg-corporate-primary py-3.5
+                 font-semibold text-white text-sm transition-all duration-200
+                 hover:bg-opacity-90 hover:shadow-lg hover:shadow-corporate-primary/30
+                 active:scale-[0.98]
+                 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-none
+                 focus:outline-none focus:ring-2 focus:ring-corporate-primary/50 focus:ring-offset-2">
+          <svg *ngIf="isLoading()" class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+          <i *ngIf="!isLoading()" class="fa-solid fa-arrow-right-to-bracket text-sm"></i>
+          {{ isLoading() ? 'Autenticando...' : 'Iniciar Sesión' }}
+        </button>
+
+      </form>
+
+      <!-- Footer del formulario -->
+      <p class="mt-8 text-center text-xs text-slate-400 dark:text-slate-600">
+        Sistema de Gestión Empresarial &copy; {{ year }}
+      </p>
+    </div>
+
+  </div>
+</div>

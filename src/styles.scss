@@ -1,0 +1,79 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary: #10B981; /* Emerald 500 */
+    --color-primary-hover: #059669; /* Emerald 600 */
+  }
+
+  .theme-emerald {
+    --color-primary: #10B981; 
+    --color-primary-hover: #059669; 
+  }
+
+  .theme-blue {
+    --color-primary: #2563EB; /* Blue 600 */
+    --color-primary-hover: #1D4ED8; /* Blue 700 */
+  }
+
+  .theme-purple {
+    --color-primary: #9333EA; /* Purple 600 */
+    --color-primary-hover: #7E22CE; /* Purple 700 */
+  }
+
+  .theme-slate {
+    --color-primary: #475569; /* Slate 500 */
+    --color-primary-hover: #334155; /* Slate 700 */
+  }
+
+  body {
+    @apply bg-corporate-light text-slate-800 dark:bg-[#0F172A] dark:text-slate-200 antialiased text-sm font-sans transition-colors duration-300;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+}
+
+/* Custom Scrollbar for webkit */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 dark:bg-slate-600 rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-400 dark:bg-slate-500;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out both;
+}
+
+/* Ocultar scrollbar manteniendo funcionalidad */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

@@ -1,0 +1,98 @@
+<!-- Header -->
+<div class="mb-6">
+  <h2 class="text-2xl font-bold text-slate-800 dark:text-white font-heading">
+    Roles y Permisos
+  </h2>
+  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+    Matriz de permisos funcionales por rol del sistema.
+  </p>
+</div>
+
+<!-- Loading -->
+<div *ngIf="isLoading()" class="flex flex-col gap-4">
+  <div *ngFor="let i of [1,2,3]"
+       class="h-20 rounded-xl bg-slate-100 dark:bg-slate-700/50 animate-pulse">
+  </div>
+</div>
+
+<!-- Matriz de roles -->
+<div *ngIf="!isLoading()" class="space-y-4">
+  <div *ngFor="let role of roles()"
+       class="rounded-xl border border-slate-200 dark:border-slate-700
+              bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
+
+    <!-- Header del rol -->
+    <div class="flex items-center justify-between px-6 py-4 cursor-pointer
+                hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors"
+         (click)="toggleRole(role.roleId)">
+      <div class="flex items-center gap-4">
+        <div class="w-10 h-10 rounded-xl bg-corporate-primary/10 flex items-center
+                    justify-center flex-shrink-0">
+          <i class="fa-solid fa-shield text-corporate-primary"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-slate-800 dark:text-white">{{ role.roleName }}</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">
+            {{ role.permissions.length }} permisos asignados
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <!-- Badges de módulos con permisos -->
+        <div class="hidden sm:flex gap-1.5">
+          <span *ngFor="let mod of getModules()"
+                [class.opacity-30]="!hasPermission(role, permsByModule()[mod]?.[0]?.permCode)"
+                class="text-xs px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-700
+                       text-slate-600 dark:text-slate-300 font-mono font-medium
+                       transition-opacity">
+            {{ mod }}
+          </span>
+        </div>
+        <i [class]="expandedRole() === role.roleId
+                    ? 'fa-solid fa-chevron-up'
+                    : 'fa-solid fa-chevron-down'"
+           class="text-slate-400 text-sm transition-transform">
+        </i>
+      </div>
+    </div>
+
+    <!-- Matriz de permisos expandida -->
+    <div *ngIf="expandedRole() === role.roleId"
+         class="border-t border-slate-200 dark:border-slate-700 p-6">
+      <div class="space-y-5">
+        <div *ngFor="let mod of getModules()">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400
+                    dark:text-slate-500 mb-3">
+            {{ mod }}
+          </p>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+            <div *ngFor="let perm of permsByModule()[mod]"
+                 class="flex items-center gap-2.5 rounded-lg p-2.5 border transition-all"
+                 [class]="hasPermission(role, perm.permCode)
+                          ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-800/40 dark:bg-emerald-900/20'
+                          : 'border-slate-100 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50'">
+              <div class="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
+                   [class]="hasPermission(role, perm.permCode)
+                            ? 'bg-emerald-500 text-white'
+                            : 'bg-slate-200 dark:bg-slate-700 text-slate-400'">
+                <i [class]="hasPermission(role, perm.permCode)
+                            ? 'fa-solid fa-check text-[10px]'
+                            : 'fa-solid fa-xmark text-[10px]'"></i>
+              </div>
+              <div class="min-w-0">
+                <p class="text-xs font-mono font-semibold truncate"
+                   [class]="hasPermission(role, perm.permCode)
+                            ? 'text-emerald-700 dark:text-emerald-400'
+                            : 'text-slate-400 dark:text-slate-500'">
+                  {{ perm.permCode }}
+                </p>
+                <p class="text-[10px] text-slate-400 truncate">{{ perm.description }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
