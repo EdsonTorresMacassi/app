@@ -3,114 +3,119 @@
   class="fixed inset-0 z-40 bg-black/50 lg:hidden transition-opacity">
 </div>
 
-<!-- Sidebar Container Limpio (Blanco en Light Mode, Azul Marino en Dark Mode) -->
+<!-- Sidebar Container -->
 <aside
   [ngClass]="{
-    'w-[290px]': !isSidebarCollapsed(),
-    'w-[88px]': isSidebarCollapsed(),
+    'w-[270px]': !isSidebarCollapsed(),
+    'w-[72px]': isSidebarCollapsed(),
     'translate-x-0': isSidebarOpenMobile(),
     '-translate-x-full': !isSidebarOpenMobile()
   }"
-  class="fixed lg:static inset-y-0 left-0 z-50 flex flex-col bg-white dark:bg-[#1E293B] text-slate-600 dark:text-slate-300 transition-all duration-300 ease-in-out lg:translate-x-0 h-full overflow-hidden shadow-sm border-r border-slate-100 dark:border-slate-800 font-heading">
-  
+  class="fixed lg:static inset-y-0 left-0 z-50 flex flex-col bg-white dark:bg-slate-900
+         text-slate-600 dark:text-slate-300 transition-all duration-300 ease-in-out
+         lg:translate-x-0 h-full overflow-hidden shadow-sm border-r border-slate-100
+         dark:border-slate-800">
+
   <!-- Logo Section -->
-  <div class="flex items-center justify-between px-6 py-5 lg:py-6" [ngClass]="{'justify-center': isSidebarCollapsed()}">
-    <a routerLink="/" class="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
-      <div class="min-w-8 min-h-8 w-8 h-8 bg-corporate-primary rounded-lg flex items-center justify-center shadow-sm">
+  <div class="flex items-center justify-between px-4 py-5"
+       [ngClass]="{'justify-center px-0': isSidebarCollapsed()}">
+    <a routerLink="/" class="flex items-center gap-3">
+      <div class="min-w-[36px] w-9 h-9 bg-corporate-primary rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
         <span class="text-white text-sm font-black">A</span>
       </div>
-      <span class="transition-opacity duration-300 whitespace-nowrap" [ngClass]="{'opacity-0 hidden': isSidebarCollapsed(), 'opacity-100 block': !isSidebarCollapsed()}">
+      <span class="text-lg font-bold text-slate-800 dark:text-white whitespace-nowrap transition-all duration-200"
+            [ngClass]="{'opacity-0 w-0 overflow-hidden': isSidebarCollapsed(), 'opacity-100': !isSidebarCollapsed()}">
         Antigravity
       </span>
     </a>
-    
-    <!-- Close Button (Mobile Only) -->
-    <button (click)="layoutService.setSidebarMobileState(false)" class="lg:hidden text-slate-400 hover:text-corporate-primary transition-colors">
-      <i class="fa-solid fa-xmark text-xl"></i>
+    <button (click)="layoutService.setSidebarMobileState(false)"
+            class="lg:hidden text-slate-400 hover:text-corporate-primary transition-colors p-1">
+      <i class="fa-solid fa-xmark text-lg"></i>
     </button>
   </div>
 
+  <!-- Divider -->
+  <div class="mx-4 h-px bg-slate-100 dark:bg-slate-800 mb-2"></div>
+
   <!-- Navigation Menu -->
-  <nav class="flex-1 overflow-y-auto overflow-x-hidden px-4 py-4 scrollbar-hide text-[14px]">
-    
-    <!-- Plantilla Recursiva para Submenús -->
+  <nav class="flex-1 overflow-y-auto overflow-x-hidden px-3 py-2 space-y-0.5 text-sm">
+
+    <!-- Plantilla Recursiva -->
     <ng-template #menuTemplate let-items="items" let-level="level">
-      <ul class="space-y-1.5" [ngClass]="{'mt-1.5': level > 0}">
+      <ul class="space-y-0.5" [ngClass]="{'mt-0.5': level > 0}">
         <li *ngFor="let item of items">
-          
-          <!-- Elemento Simple o Padre -->
-          <a *ngIf="item.path; else parentMenu"
-             [routerLink]="item.path" 
+
+          <!-- ──────────────── ITEM CON RUTA (hoja del árbol) ──────────────── -->
+          <a *ngIf="item.navPath; else parentMenu"
+             [routerLink]="item.navPath"
              routerLinkActive #rla="routerLinkActive"
-             [routerLinkActiveOptions]="{exact: item.path === '/'}"
+             [routerLinkActiveOptions]="{exact: item.navPath === '/'}"
              (click)="closeSidebarMobile()"
-             class="group relative flex items-center gap-3 rounded-lg py-2.5 transition-all duration-200"
+             class="group flex items-center gap-3 rounded-lg py-2.5 transition-all duration-150 cursor-pointer select-none"
              [ngClass]="{
                'bg-corporate-primary text-white shadow-sm font-medium': rla.isActive,
                'text-slate-600 hover:bg-slate-100 hover:text-corporate-primary dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white': !rla.isActive,
-               'px-3': level === 0,
-               'pl-6 pr-3': level === 1 && !isSidebarCollapsed(),
-               'pl-10 pr-3 font-sans text-[13px]': level === 2 && !isSidebarCollapsed(),
-               'justify-center px-0': isSidebarCollapsed()
+               'px-3': !isSidebarCollapsed(),
+               'justify-center px-2': isSidebarCollapsed(),
+               'pl-9': level === 1 && !isSidebarCollapsed(),
+               'pl-12': level === 2 && !isSidebarCollapsed()
              }">
-            
-            <!-- Icono Font Awesome -->
-            <div *ngIf="item.icon" class="min-w-6 flex-shrink-0 flex justify-center">
-              <i class="text-lg w-6 text-center transition-colors" [ngClass]="item.icon"></i>
+
+            <!-- Icono -->
+            <div *ngIf="item.icon" class="w-5 flex-shrink-0 flex justify-center">
+              <i class="text-base text-center" [ngClass]="item.icon"
+                 [class.text-white]="rla.isActive"></i>
             </div>
-            
-            <!-- Indicador Sutil Nivel 3 -->
-            <div *ngIf="!item.icon && level === 2 && !isSidebarCollapsed()" 
-                 class="absolute left-6 select-none" [ngClass]="rla.isActive ? 'text-white/70' : 'text-slate-300 dark:text-slate-600'">-</div>
+            <!-- Dot para sub-sub items sin ícono -->
+            <span *ngIf="!item.icon && level >= 2 && !isSidebarCollapsed()"
+                  class="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                  [ngClass]="rla.isActive ? 'bg-white' : 'bg-slate-300 dark:bg-slate-600'"></span>
 
             <!-- Título -->
-            <span class="transition-opacity duration-300 whitespace-nowrap" 
-                  [ngClass]="{'opacity-0 hidden': isSidebarCollapsed() && level === 0, 'opacity-100 block': !isSidebarCollapsed()}">
-              {{ item.title }}
-            </span>
+            <span *ngIf="!isSidebarCollapsed()" class="truncate leading-none">{{ item.title }}</span>
 
-            <!-- Tooltip en Modo Colapsado -->
-            <div *ngIf="isSidebarCollapsed() && level === 0" class="absolute left-full ml-4 hidden px-3 py-1.5 bg-slate-800 text-white text-[12px] rounded-md whitespace-nowrap group-hover:block z-50 shadow-lg font-sans">
+            <!-- Tooltip colapsado -->
+            <div *ngIf="isSidebarCollapsed()"
+                 class="absolute left-full ml-3 hidden px-2.5 py-1.5 bg-slate-800 text-white text-xs
+                        rounded-md whitespace-nowrap group-hover:block z-50 shadow-lg pointer-events-none">
               {{ item.title }}
             </div>
           </a>
 
-          <!-- Plantilla del Padre (Desplegable) -->
+          <!-- ──────────────── ITEM PADRE (desplegable) ──────────────── -->
           <ng-template #parentMenu>
             <button (click)="toggleSubMenu(item.title)"
-                    class="group relative flex w-full items-center justify-between gap-3 rounded-lg py-2.5 transition-all duration-200 text-slate-600 hover:bg-slate-100 hover:text-corporate-primary dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+                    class="group w-full flex items-center rounded-lg py-2.5 transition-all duration-150 cursor-pointer select-none
+                           text-slate-600 hover:bg-slate-100 hover:text-corporate-primary dark:text-slate-400 dark:hover:bg-slate-800"
                     [ngClass]="{
-                      'px-3': level === 0,
-                      'pl-6 pr-3': level === 1 && !isSidebarCollapsed(),
-                      'pl-10 pr-3 font-sans text-[13px]': level === 2 && !isSidebarCollapsed(),
-                      'justify-center px-0': isSidebarCollapsed(),
-                      'bg-slate-50 dark:bg-slate-800/50': isSubMenuOpen(item.title)
+                      'px-3 justify-between': !isSidebarCollapsed(),
+                      'justify-center px-2': isSidebarCollapsed(),
+                      'bg-corporate-primary/10 dark:bg-slate-800/60 text-corporate-primary dark:text-white': isSubMenuOpen(item.title),
+                      'pl-9': level === 1 && !isSidebarCollapsed(),
+                      'pl-12': level === 2 && !isSidebarCollapsed()
                     }">
-              
-              <div class="flex items-center gap-3">
-                <div *ngIf="item.icon" class="min-w-6 flex-shrink-0 flex justify-center">
-                  <i class="text-lg w-6 text-center transition-colors" [ngClass]="item.icon" [class.text-corporate-primary]="isSubMenuOpen(item.title)"></i>
+
+              <!-- Icono + Texto -->
+              <div class="flex items-center gap-3 min-w-0">
+                <div *ngIf="item.icon" class="w-5 flex-shrink-0 flex justify-center">
+                  <i class="text-base text-center" [ngClass]="item.icon"
+                     [class.text-corporate-primary]="isSubMenuOpen(item.title)"></i>
                 </div>
-                
-                <span class="transition-opacity duration-300 whitespace-nowrap" 
-                      [ngClass]="{
-                        'opacity-0 hidden': isSidebarCollapsed() && level === 0, 
-                        'opacity-100 block': !isSidebarCollapsed(),
-                        'font-medium text-corporate-primary dark:text-white': isSubMenuOpen(item.title)
-                      }">
-                  {{ item.title }}
-                </span>
+                <span *ngIf="!isSidebarCollapsed()" class="truncate leading-none font-medium">{{ item.title }}</span>
               </div>
 
-              <!-- Flecha Expandir/Contraer -->
-              <i *ngIf="!isSidebarCollapsed()" 
-                 class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200" 
-                 [ngClass]="{'rotate-180 text-corporate-primary dark:text-white': isSubMenuOpen(item.title)}"></i>
+              <!-- Chevron — solo cuando el sidebar no está colapsado -->
+              <i *ngIf="!isSidebarCollapsed()"
+                 class="fa-solid fa-chevron-right text-[10px] flex-shrink-0 transition-transform duration-200 text-slate-400"
+                 [class.rotate-90]="isSubMenuOpen(item.title)"
+                 [class.text-corporate-primary]="isSubMenuOpen(item.title)"></i>
             </button>
-            
-            <!-- Contenedor Animado de los Hijos -->
-            <div *ngIf="isSubMenuOpen(item.title) && item.children" class="overflow-hidden">
-              <ng-container *ngTemplateOutlet="menuTemplate; context: { items: item.children, level: level + 1 }"></ng-container>
+
+            <!-- Hijos animados -->
+            <div *ngIf="isSubMenuOpen(item.title) && item.children && item.children.length > 0"
+                 class="overflow-hidden">
+              <ng-container *ngTemplateOutlet="menuTemplate; context: { items: item.children, level: level + 1 }">
+              </ng-container>
             </div>
           </ng-template>
 
@@ -118,20 +123,24 @@
       </ul>
     </ng-template>
 
-    <!-- Iniciar Menú Nivel 0 -->
-    <ng-container *ngTemplateOutlet="menuTemplate; context: { items: filteredMenu(), level: 0 }"></ng-container>
-
+    <!-- Iniciar Menú desde nivel 0 -->
+    <ng-container *ngTemplateOutlet="menuTemplate; context: { items: filteredMenu(), level: 0 }">
+    </ng-container>
   </nav>
 
-  <!-- Footer/User Info (Blanco/Gris) -->
-  <div class="h-16 px-4 flex items-center border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-[#1E293B]">
-    <div class="flex items-center gap-3 w-full" [ngClass]="{'justify-center': isSidebarCollapsed()}">
-      <div class="min-w-10 min-h-10 w-10 h-10 rounded-md bg-white border border-slate-200 dark:bg-slate-800 dark:border-slate-700 flex items-center justify-center text-corporate-primary font-bold shadow-sm">
-        {{ currentUser()?.person?.firstName?.charAt(0) || 'U' }}
+  <!-- Footer: info del usuario -->
+  <div class="px-3 py-3 border-t border-slate-100 dark:border-slate-800">
+    <div class="flex items-center gap-3" [ngClass]="{'justify-center': isSidebarCollapsed()}">
+      <div class="w-9 h-9 min-w-[36px] rounded-lg bg-corporate-primary flex items-center justify-center text-white font-bold text-sm shadow-sm">
+        {{ currentUser()?.person?.firstName?.charAt(0)?.toUpperCase() || 'U' }}
       </div>
-      <div class="transition-opacity duration-300 whitespace-nowrap overflow-hidden" [ngClass]="{'opacity-0 hidden': isSidebarCollapsed(), 'opacity-100 block': !isSidebarCollapsed()}">
-        <p class="text-sm font-semibold text-slate-800 dark:text-white truncate">{{ currentUser()?.person?.firstName }} {{ currentUser()?.person?.lastName }}</p>
-        <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate uppercase tracking-wider font-sans">{{ currentUser()?.roles?.join(', ') }}</p>
+      <div *ngIf="!isSidebarCollapsed()" class="overflow-hidden">
+        <p class="text-sm font-semibold text-slate-800 dark:text-white truncate leading-tight">
+          {{ currentUser()?.person?.firstName }} {{ currentUser()?.person?.lastName }}
+        </p>
+        <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate uppercase tracking-wide mt-0.5">
+          {{ currentUser()?.roles?.[0] || 'Usuario' }}
+        </p>
       </div>
     </div>
   </div>

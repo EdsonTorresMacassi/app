@@ -1,0 +1,48 @@
+<div class="flex flex-col mb-4 relative">
+  @if (label()) {
+    <label
+      [class]="
+        isInvalid || hasError()
+          ? 'block text-sm font-semibold text-rose-500 mb-1.5'
+          : 'block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5'
+      "
+    >
+      {{ label() }}
+      @if (isRequired) {
+        <span class="text-rose-400">*</span>
+      }
+    </label>
+  }
+
+  <div class="relative flex items-center">
+    <div class="absolute left-3 text-slate-400 dark:text-slate-500 pointer-events-none">
+      @if (type() === 'time') {
+        <i class="fa-regular fa-clock"></i>
+      } @else {
+        <i class="fa-regular fa-calendar"></i>
+      }
+    </div>
+
+    <!-- El input nativo date/datetime-local/time. 
+         En webkit (Chrome/Safari) usamos selectores CSS para ocultar el icono de calendario nativo 
+         si queremos usar nuestro propio diseño, pero por compatibilidad nativa lo dejamos fluido. -->
+    <input
+      [type]="type()"
+      [disabled]="disabled()"
+      [value]="value()"
+      [min]="min()"
+      [max]="max()"
+      (input)="handleInput($event)"
+      (blur)="onTouched()"
+      [class]="getInputClasses()"
+      class="pl-10"
+    />
+  </div>
+
+  @if (currentErrorMessage) {
+    <p class="mt-1.5 text-xs font-medium text-rose-500 flex items-start gap-1">
+      <i class="fa-solid fa-circle-exclamation mt-0.5"></i>
+      {{ currentErrorMessage }}
+    </p>
+  }
+</div>

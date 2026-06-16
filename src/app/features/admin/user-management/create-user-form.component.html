@@ -27,7 +27,7 @@
 
   <!-- Formulario con scroll -->
   <form [formGroup]="form" (ngSubmit)="submit()"
-        class="overflow-y-auto flex-1 p-6 space-y-5">
+        class="overflow-y-auto flex-1 p-6 space-y-6">
 
     <!-- Error global -->
     <div *ngIf="error()"
@@ -43,41 +43,13 @@
                 dark:text-slate-500 mb-3">Datos personales</p>
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-            Nombres *
-          </label>
-          <input formControlName="firstName" type="text" placeholder="Nombres"
-                 class="w-full rounded-lg border border-slate-200 dark:border-slate-600
-                        bg-slate-50 dark:bg-slate-700/50 px-4 py-2.5 text-sm
-                        text-slate-800 dark:text-white outline-none
-                        focus:border-corporate-primary focus:ring-2
-                        focus:ring-corporate-primary/20 transition-all"
-                 [class.border-rose-400]="form.controls.firstName.invalid &&
-                                          form.controls.firstName.touched" />
+          <app-input label="Nombres" formControlName="firstName" placeholder="Nombres" [required]="true"></app-input>
         </div>
         <div>
-          <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-            Apellidos *
-          </label>
-          <input formControlName="lastName" type="text" placeholder="Apellidos"
-                 class="w-full rounded-lg border border-slate-200 dark:border-slate-600
-                        bg-slate-50 dark:bg-slate-700/50 px-4 py-2.5 text-sm
-                        text-slate-800 dark:text-white outline-none
-                        focus:border-corporate-primary focus:ring-2
-                        focus:ring-corporate-primary/20 transition-all"
-                 [class.border-rose-400]="form.controls.lastName.invalid &&
-                                          form.controls.lastName.touched" />
+          <app-input label="Apellidos" formControlName="lastName" placeholder="Apellidos" [required]="true"></app-input>
         </div>
         <div class="col-span-2">
-          <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-            Segundo apellido
-          </label>
-          <input formControlName="secondLastName" type="text" placeholder="Opcional"
-                 class="w-full rounded-lg border border-slate-200 dark:border-slate-600
-                        bg-slate-50 dark:bg-slate-700/50 px-4 py-2.5 text-sm
-                        text-slate-800 dark:text-white outline-none
-                        focus:border-corporate-primary focus:ring-2
-                        focus:ring-corporate-primary/20 transition-all" />
+          <app-input label="Segundo apellido" formControlName="secondLastName" placeholder="Opcional"></app-input>
         </div>
       </div>
     </div>
@@ -87,36 +59,33 @@
       <p class="text-xs font-semibold uppercase tracking-wider text-slate-400
                 dark:text-slate-500 mb-3">Documento de identidad</p>
       <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-            Tipo *
-          </label>
-          <select formControlName="docType"
-                  class="w-full rounded-lg border border-slate-200 dark:border-slate-600
-                         bg-slate-50 dark:bg-slate-700/50 px-4 py-2.5 text-sm
-                         text-slate-800 dark:text-white outline-none
-                         focus:border-corporate-primary transition-all"
-                  [class.border-rose-400]="form.controls.docType.invalid &&
-                                           form.controls.docType.touched">
-            <option value="">Seleccionar...</option>
-            <option value="CI">Cédula de Identidad</option>
-            <option value="RIF">RIF</option>
-            <option value="PASSPORT">Pasaporte</option>
-            <option value="DNI">DNI</option>
-          </select>
+        <div data-showcase-root>
+          <app-select label="Tipo" formControlName="docType" [options]="docTypeOptions()" placeholder="Seleccionar..." [required]="true"></app-select>
         </div>
         <div>
-          <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-            Número *
-          </label>
-          <input formControlName="docNumber" type="text" placeholder="Ej: V-12345678"
-                 class="w-full rounded-lg border border-slate-200 dark:border-slate-600
-                        bg-slate-50 dark:bg-slate-700/50 px-4 py-2.5 text-sm
-                        text-slate-800 dark:text-white outline-none
-                        focus:border-corporate-primary focus:ring-2
-                        focus:ring-corporate-primary/20 transition-all"
-                 [class.border-rose-400]="form.controls.docNumber.invalid &&
-                                          form.controls.docNumber.touched" />
+          <app-input label="Número" formControlName="docNumber" placeholder="Ej: V-12345678" [required]="true"></app-input>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección: Perfil Extendido -->
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">Perfil Extendido</p>
+      <div class="grid grid-cols-2 gap-4">
+        <div data-showcase-root>
+          <app-select label="Género" formControlName="gender" [options]="genderOptions()" placeholder="Seleccionar..."></app-select>
+        </div>
+        <div data-showcase-root>
+          <app-select label="Nacionalidad" formControlName="nationality" [options]="nationalityOptions()" [searchable]="true" placeholder="Buscar país..."></app-select>
+        </div>
+        <div>
+          <app-datetime-picker label="Fecha de nacimiento" formControlName="birthDate" type="date"></app-datetime-picker>
+        </div>
+        <div>
+          <app-input label="Teléfono" formControlName="phone" placeholder="+58 412 000 0000"></app-input>
+        </div>
+        <div class="col-span-2">
+          <app-input label="Dirección" formControlName="address" placeholder="Ej: Av. Principal..."></app-input>
         </div>
       </div>
     </div>
@@ -127,95 +96,58 @@
                 dark:text-slate-500 mb-3">Credenciales de acceso</p>
       <div class="space-y-4">
         <div>
-          <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-            Email *
-          </label>
-          <input formControlName="email" type="email" placeholder="correo@empresa.com"
-                 class="w-full rounded-lg border border-slate-200 dark:border-slate-600
-                        bg-slate-50 dark:bg-slate-700/50 px-4 py-2.5 text-sm
-                        text-slate-800 dark:text-white outline-none
-                        focus:border-corporate-primary focus:ring-2
-                        focus:ring-corporate-primary/20 transition-all"
-                 [class.border-rose-400]="form.controls.email.invalid &&
-                                          form.controls.email.touched" />
+          <app-input label="Email" formControlName="email" type="email" placeholder="correo@empresa.com" [required]="true"></app-input>
+        </div>
+        <div>
+          <app-input label="Username" formControlName="username" placeholder="nombre.usuario" [required]="true"></app-input>
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-              Username *
-            </label>
-            <input formControlName="username" type="text" placeholder="nombre.usuario"
-                   class="w-full rounded-lg border border-slate-200 dark:border-slate-600
-                          bg-slate-50 dark:bg-slate-700/50 px-4 py-2.5 text-sm
-                          text-slate-800 dark:text-white outline-none
-                          focus:border-corporate-primary focus:ring-2
-                          focus:ring-corporate-primary/20 transition-all"
-                   [class.border-rose-400]="form.controls.username.invalid &&
-                                            form.controls.username.touched" />
+            <app-input label="Contraseña" formControlName="password" [type]="showPwd() ? 'text' : 'password'" placeholder="Ingresa tu contraseña" [required]="true"
+                       [errorMessages]="{ required: 'La contraseña es obligatoria', pattern: 'Formato inválido', minlength: 'Mínimo 8 caracteres' }">
+              <button rightIcon type="button" (click)="togglePwd()"
+                      class="text-slate-400 hover:text-slate-600 transition-colors mr-1">
+                <i [class]="showPwd() ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'" class="text-sm"></i>
+              </button>
+            </app-input>
+
+            <!-- Validador visual de contraseña -->
+            <div class="mt-2 p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+              <p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">
+                La contraseña debe cumplir:
+              </p>
+              <ul class="space-y-1.5 text-xs">
+                <li class="flex items-center gap-2 transition-colors" [class.text-emerald-600]="hasLength" [class.text-rose-500]="!hasLength">
+                  <i class="fa-solid w-3 text-center" [class.fa-check]="hasLength" [class.fa-xmark]="!hasLength"></i>
+                  Al menos 8 caracteres
+                </li>
+                <li class="flex items-center gap-2 transition-colors" [class.text-emerald-600]="hasUpper" [class.text-rose-500]="!hasUpper">
+                  <i class="fa-solid w-3 text-center" [class.fa-check]="hasUpper" [class.fa-xmark]="!hasUpper"></i>
+                  Al menos una letra mayúscula
+                </li>
+                <li class="flex items-center gap-2 transition-colors" [class.text-emerald-600]="hasNumber" [class.text-rose-500]="!hasNumber">
+                  <i class="fa-solid w-3 text-center" [class.fa-check]="hasNumber" [class.fa-xmark]="!hasNumber"></i>
+                  Al menos un número
+                </li>
+              </ul>
+            </div>
           </div>
           <div>
-            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-              Contraseña *
-            </label>
-            <div class="relative">
-              <input formControlName="password"
-                     [type]="showPwd() ? 'text' : 'password'"
-                     placeholder="Mín. 8 chars, 1 mayúscula, 1 número"
-                     class="w-full rounded-lg border border-slate-200 dark:border-slate-600
-                            bg-slate-50 dark:bg-slate-700/50 px-4 py-2.5 pr-10 text-sm
-                            text-slate-800 dark:text-white outline-none
-                            focus:border-corporate-primary focus:ring-2
-                            focus:ring-corporate-primary/20 transition-all"
-                     [class.border-rose-400]="form.controls.password.invalid &&
-                                              form.controls.password.touched" />
-              <button type="button" (click)="togglePwd()"
-                      class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400
-                             hover:text-slate-600 transition-colors">
-                <i [class]="showPwd() ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"
-                   class="text-sm"></i>
-              </button>
-            </div>
-            <p *ngIf="form.controls.password.invalid && form.controls.password.touched"
-               class="mt-1 text-xs text-rose-500">
-              Mínimo 8 caracteres, 1 mayúscula y 1 número.
-            </p>
+            <app-input label="Confirmar Contraseña" formControlName="confirmPassword" [type]="showPwd() ? 'text' : 'password'" placeholder="Confirma tu contraseña" [required]="true"
+                       [hasError]="form.hasError('mismatch') && form.controls.confirmPassword.touched"
+                       [errorMessages]="{ custom: 'Las contraseñas no coinciden', required: 'Debes confirmar tu contraseña' }">
+            </app-input>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Sección: Rol y contacto -->
+    <!-- Sección: Rol -->
     <div>
       <p class="text-xs font-semibold uppercase tracking-wider text-slate-400
-                dark:text-slate-500 mb-3">Rol y contacto</p>
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-            Rol *
-          </label>
-          <select formControlName="roleName"
-                  class="w-full rounded-lg border border-slate-200 dark:border-slate-600
-                         bg-slate-50 dark:bg-slate-700/50 px-4 py-2.5 text-sm
-                         text-slate-800 dark:text-white outline-none
-                         focus:border-corporate-primary transition-all"
-                  [class.border-rose-400]="form.controls.roleName.invalid &&
-                                           form.controls.roleName.touched">
-            <option value="">Seleccionar rol...</option>
-            <option *ngFor="let role of roles()" [value]="role.roleName">
-              {{ role.roleName }}
-            </option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-            Teléfono
-          </label>
-          <input formControlName="phone" type="tel" placeholder="+58 412 000 0000"
-                 class="w-full rounded-lg border border-slate-200 dark:border-slate-600
-                        bg-slate-50 dark:bg-slate-700/50 px-4 py-2.5 text-sm
-                        text-slate-800 dark:text-white outline-none
-                        focus:border-corporate-primary transition-all" />
-        </div>
+                dark:text-slate-500 mb-3">Roles y permisos</p>
+      <div data-showcase-root>
+        <app-select label="Rol" formControlName="roleName" [options]="roleOptions()" [searchable]="true" placeholder="Seleccionar rol..." [required]="true"></app-select>
       </div>
     </div>
 
@@ -224,27 +156,13 @@
   <!-- Footer con botones -->
   <div class="flex gap-3 border-t border-slate-200 dark:border-slate-700
               px-6 py-4 bg-slate-50/50 dark:bg-slate-800/50 flex-shrink-0">
-    <button type="button" (click)="onCancel.emit()"
-            class="flex-1 rounded-lg border border-slate-200 dark:border-slate-700
-                   px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300
-                   hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
+    <app-button type="button" variant="secondary" [fullWidth]="true" (click)="onCancel.emit()">
       Cancelar
-    </button>
-    <button (click)="submit()"
-            [disabled]="isLoading()"
-            class="flex-1 flex items-center justify-center gap-2 rounded-lg
-                   bg-corporate-primary px-4 py-2.5 text-sm font-semibold text-white
-                   hover:bg-opacity-90 transition-all shadow-sm
-                   disabled:opacity-60 disabled:cursor-not-allowed">
-      <svg *ngIf="isLoading()" class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-        <circle class="opacity-25" cx="12" cy="12" r="10"
-                stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-      </svg>
-      <i *ngIf="!isLoading()" class="fa-solid fa-floppy-disk text-sm"></i>
-      {{ isLoading() ? 'Creando...' : 'Crear Usuario' }}
-    </button>
+    </app-button>
+    <app-button variant="primary" [fullWidth]="true" [loading]="isLoading()" (click)="submit()">
+      <i *ngIf="!isLoading()" leftIcon class="fa-solid fa-floppy-disk text-sm"></i>
+      Crear Usuario
+    </app-button>
   </div>
 
 </div>

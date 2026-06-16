@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { MenuItemDTO } from '../models/auth-response.interface';
+import { MenuItem } from '../models/api.models';
 
 @Injectable({
   providedIn: 'root'
@@ -7,10 +7,10 @@ import { MenuItemDTO } from '../models/auth-response.interface';
 export class NavigationService {
   private readonly MENU_KEY = 'nav_menu';
 
-  private menuSignal = signal<MenuItemDTO[]>(this.getMenuFromStorage());
+  private menuSignal = signal<MenuItem[]>(this.getMenuFromStorage());
   readonly menu = this.menuSignal.asReadonly();
 
-  setMenu(items: MenuItemDTO[]): void {
+  setMenu(items: MenuItem[]): void {
     sessionStorage.setItem(this.MENU_KEY, JSON.stringify(items));
     this.menuSignal.set(items);
   }
@@ -20,7 +20,7 @@ export class NavigationService {
     this.menuSignal.set([]);
   }
 
-  private getMenuFromStorage(): MenuItemDTO[] {
+  private getMenuFromStorage(): MenuItem[] {
     const stored = sessionStorage.getItem(this.MENU_KEY);
     if (stored) {
       try {

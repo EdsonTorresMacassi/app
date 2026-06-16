@@ -1,11 +1,26 @@
 <!-- Header -->
-<div class="mb-6">
-  <h2 class="text-2xl font-bold text-slate-800 dark:text-white font-heading">
-    Roles y Permisos
-  </h2>
-  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-    Matriz de permisos funcionales por rol del sistema.
-  </p>
+<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+  <div>
+    <h2 class="text-2xl font-bold text-slate-800 dark:text-white font-heading">
+      Gestión de Accesos
+    </h2>
+    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+      Administra los roles y permisos del sistema.
+    </p>
+  </div>
+  
+  <div class="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
+    <button (click)="setTab('roles')"
+            [class]="activeTab() === 'roles' ? 'bg-white dark:bg-slate-700 shadow-sm text-corporate-primary font-semibold' : 'text-slate-500 hover:text-slate-700'"
+            class="px-4 py-2 rounded-md text-sm transition-all">
+      Roles
+    </button>
+    <button (click)="setTab('permissions')"
+            [class]="activeTab() === 'permissions' ? 'bg-white dark:bg-slate-700 shadow-sm text-corporate-primary font-semibold' : 'text-slate-500 hover:text-slate-700'"
+            class="px-4 py-2 rounded-md text-sm transition-all">
+      Permisos
+    </button>
+  </div>
 </div>
 
 <!-- Loading -->
@@ -15,19 +30,27 @@
   </div>
 </div>
 
-<!-- Matriz de roles -->
-<div *ngIf="!isLoading()" class="space-y-4">
+<!-- ==============================================
+     Pestaña: ROLES
+     ============================================== -->
+<div *ngIf="!isLoading() && activeTab() === 'roles'" class="space-y-4">
+  <div class="flex justify-end mb-4">
+    <button *ngIf="authService.hasPermission('ROLE_WRITE')"
+            (click)="openRoleForm()"
+            class="inline-flex items-center gap-2 bg-corporate-primary text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-opacity-90 transition-all shadow-sm">
+      <i class="fa-solid fa-plus text-xs"></i>
+      Nuevo Rol
+    </button>
+  </div>
+
   <div *ngFor="let role of roles()"
        class="rounded-xl border border-slate-200 dark:border-slate-700
               bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
-
+    
     <!-- Header del rol -->
-    <div class="flex items-center justify-between px-6 py-4 cursor-pointer
-                hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors"
-         (click)="toggleRole(role.roleId)">
-      <div class="flex items-center gap-4">
-        <div class="w-10 h-10 rounded-xl bg-corporate-primary/10 flex items-center
-                    justify-center flex-shrink-0">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between px-6 py-4 gap-4">
+      <div class="flex items-center gap-4 cursor-pointer flex-1" (click)="toggleRole(role.roleId)">
+        <div class="w-10 h-10 rounded-xl bg-corporate-primary/10 flex items-center justify-center flex-shrink-0">
           <i class="fa-solid fa-shield text-corporate-primary"></i>
         </div>
         <div>
@@ -37,32 +60,35 @@
           </p>
         </div>
       </div>
+      
       <div class="flex items-center gap-3">
-        <!-- Badges de módulos con permisos -->
-        <div class="hidden sm:flex gap-1.5">
-          <span *ngFor="let mod of getModules()"
-                [class.opacity-30]="!hasPermission(role, permsByModule()[mod]?.[0]?.permCode)"
-                class="text-xs px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-700
-                       text-slate-600 dark:text-slate-300 font-mono font-medium
-                       transition-opacity">
-            {{ mod }}
-          </span>
-        </div>
-        <i [class]="expandedRole() === role.roleId
-                    ? 'fa-solid fa-chevron-up'
-                    : 'fa-solid fa-chevron-down'"
-           class="text-slate-400 text-sm transition-transform">
+        <!-- Acciones CRUD -->
+        <button *ngIf="authService.hasPermission('ROLE_WRITE')"
+                (click)="openRoleForm(role)"
+                class="w-8 h-8 rounded-lg text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 flex items-center justify-center transition-all">
+          <i class="fa-solid fa-pen-to-square text-sm"></i>
+        </button>
+        <button *ngIf="authService.hasPermission('ROLE_WRITE')"
+                (click)="deleteRole(role)"
+                class="w-8 h-8 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 flex items-center justify-center transition-all">
+          <i class="fa-solid fa-trash text-sm"></i>
+        </button>
+        
+        <div class="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-2"></div>
+        
+        <i [class]="expandedRole() === role.roleId ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down'"
+           class="text-slate-400 text-sm cursor-pointer p-2"
+           (click)="toggleRole(role.roleId)">
         </i>
       </div>
     </div>
 
     <!-- Matriz de permisos expandida -->
     <div *ngIf="expandedRole() === role.roleId"
-         class="border-t border-slate-200 dark:border-slate-700 p-6">
+         class="border-t border-slate-200 dark:border-slate-700 p-6 bg-slate-50/50 dark:bg-slate-800/50">
       <div class="space-y-5">
         <div *ngFor="let mod of getModules()">
-          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400
-                    dark:text-slate-500 mb-3">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">
             {{ mod }}
           </p>
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
@@ -70,20 +96,14 @@
                  class="flex items-center gap-2.5 rounded-lg p-2.5 border transition-all"
                  [class]="hasPermission(role, perm.permCode)
                           ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-800/40 dark:bg-emerald-900/20'
-                          : 'border-slate-100 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50'">
+                          : 'border-slate-100 bg-white dark:border-slate-700 dark:bg-slate-800'">
               <div class="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
-                   [class]="hasPermission(role, perm.permCode)
-                            ? 'bg-emerald-500 text-white'
-                            : 'bg-slate-200 dark:bg-slate-700 text-slate-400'">
-                <i [class]="hasPermission(role, perm.permCode)
-                            ? 'fa-solid fa-check text-[10px]'
-                            : 'fa-solid fa-xmark text-[10px]'"></i>
+                   [class]="hasPermission(role, perm.permCode) ? 'bg-emerald-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-400'">
+                <i [class]="hasPermission(role, perm.permCode) ? 'fa-solid fa-check text-[10px]' : 'fa-solid fa-xmark text-[10px]'"></i>
               </div>
               <div class="min-w-0">
                 <p class="text-xs font-mono font-semibold truncate"
-                   [class]="hasPermission(role, perm.permCode)
-                            ? 'text-emerald-700 dark:text-emerald-400'
-                            : 'text-slate-400 dark:text-slate-500'">
+                   [class]="hasPermission(role, perm.permCode) ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'">
                   {{ perm.permCode }}
                 </p>
                 <p class="text-[10px] text-slate-400 truncate">{{ perm.description }}</p>
@@ -93,6 +113,182 @@
         </div>
       </div>
     </div>
+  </div>
+</div>
 
+<!-- ==============================================
+     Pestaña: PERMISOS
+     ============================================== -->
+<div *ngIf="!isLoading() && activeTab() === 'permissions'" class="space-y-4">
+  <div class="flex justify-end mb-4">
+    <button *ngIf="authService.hasPermission('ROLE_WRITE')"
+            (click)="openPermForm()"
+            class="inline-flex items-center gap-2 bg-corporate-primary text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-opacity-90 transition-all shadow-sm">
+      <i class="fa-solid fa-plus text-xs"></i>
+      Nuevo Permiso
+    </button>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+    <div *ngFor="let perm of allPerms()"
+         class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[10px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-2 py-1 rounded-md">
+            {{ perm.permModule }}
+          </span>
+          <div class="flex items-center gap-1">
+            <button *ngIf="authService.hasPermission('ROLE_WRITE')"
+                    (click)="openPermForm(perm)"
+                    class="w-7 h-7 rounded bg-slate-50 dark:bg-slate-700 text-slate-400 hover:text-amber-500 flex items-center justify-center transition-colors">
+              <i class="fa-solid fa-pen-to-square text-xs"></i>
+            </button>
+            <button *ngIf="authService.hasPermission('ROLE_WRITE')"
+                    (click)="deletePermission(perm)"
+                    class="w-7 h-7 rounded bg-slate-50 dark:bg-slate-700 text-slate-400 hover:text-rose-500 flex items-center justify-center transition-colors">
+              <i class="fa-solid fa-trash text-xs"></i>
+            </button>
+          </div>
+        </div>
+        <h4 class="font-mono font-bold text-sm text-slate-800 dark:text-white mb-1">{{ perm.permCode }}</h4>
+        <p class="text-xs text-slate-500 dark:text-slate-400">{{ perm.description || 'Sin descripción' }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==============================================
+     MODAL: FORMULARIO ROL
+     ============================================== -->
+<div *ngIf="showRoleModal()" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
+  <div class="w-full max-w-3xl rounded-3xl bg-white dark:bg-slate-900 shadow-2xl overflow-hidden my-8">
+    <div class="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+      <h3 class="text-xl font-bold text-slate-800 dark:text-white font-heading">
+        {{ editingRole() ? 'Editar Rol' : 'Nuevo Rol' }}
+      </h3>
+      <button (click)="closeRoleForm()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
+        <i class="fa-solid fa-xmark text-xl"></i>
+      </button>
+    </div>
+    
+    <div class="p-8 max-h-[70vh] overflow-y-auto">
+      <form [formGroup]="roleForm" (ngSubmit)="saveRole()" class="space-y-6">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
+              Nombre del Rol <span class="text-rose-500">*</span>
+            </label>
+            <input type="text" formControlName="roleName"
+                   class="w-full rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-800 dark:border-slate-700 px-4 py-3 text-sm focus:border-corporate-primary focus:ring-2 focus:ring-corporate-primary/20 transition-all outline-none"
+                   placeholder="Ej. ADMIN_SISTEMA">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
+              Descripción
+            </label>
+            <input type="text" formControlName="description"
+                   class="w-full rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-800 dark:border-slate-700 px-4 py-3 text-sm focus:border-corporate-primary focus:ring-2 focus:ring-corporate-primary/20 transition-all outline-none"
+                   placeholder="Ej. Administrador con acceso total">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">
+            Asignar Permisos al Rol
+          </label>
+          <div class="space-y-6">
+            <div *ngFor="let mod of getModules()">
+              <p class="text-xs font-bold text-slate-400 dark:text-slate-500 mb-3 border-b border-slate-100 dark:border-slate-800 pb-2">
+                {{ mod }}
+              </p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <label *ngFor="let perm of permsByModule()[mod]"
+                       class="flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all"
+                       [class]="selectedPermissionIds().includes(perm.permissionId) ? 'border-corporate-primary/50 bg-corporate-primary/5' : 'border-slate-200 dark:border-slate-700 hover:border-corporate-primary/30'">
+                  <input type="checkbox"
+                         [checked]="selectedPermissionIds().includes(perm.permissionId)"
+                         (change)="togglePermissionSelection(perm.permissionId)"
+                         class="mt-1 w-4 h-4 rounded text-corporate-primary focus:ring-corporate-primary">
+                  <div>
+                    <p class="text-sm font-semibold text-slate-800 dark:text-white font-mono leading-none">
+                      {{ perm.permCode }}
+                    </p>
+                    <p class="text-xs text-slate-500 mt-1">{{ perm.description }}</p>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="px-8 py-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex justify-end gap-3">
+      <button type="button" (click)="closeRoleForm()"
+              class="px-6 py-2.5 rounded-xl font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-all">
+        Cancelar
+      </button>
+      <button type="button" (click)="saveRole()" [disabled]="roleForm.invalid || isSaving()"
+              class="px-6 py-2.5 rounded-xl font-semibold text-white bg-corporate-primary hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm">
+        {{ isSaving() ? 'Guardando...' : 'Guardar Rol' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ==============================================
+     MODAL: FORMULARIO PERMISO
+     ============================================== -->
+<div *ngIf="showPermModal()" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+  <div class="w-full max-w-md rounded-3xl bg-white dark:bg-slate-900 shadow-2xl overflow-hidden">
+    <div class="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+      <h3 class="text-xl font-bold text-slate-800 dark:text-white font-heading">
+        {{ editingPerm() ? 'Editar Permiso' : 'Nuevo Permiso' }}
+      </h3>
+      <button (click)="closePermForm()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
+        <i class="fa-solid fa-xmark text-xl"></i>
+      </button>
+    </div>
+    
+    <div class="p-8">
+      <form [formGroup]="permForm" (ngSubmit)="savePermission()" class="space-y-5">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
+            Código <span class="text-rose-500">*</span>
+          </label>
+          <input type="text" formControlName="permCode"
+                 class="w-full rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-800 dark:border-slate-700 px-4 py-3 text-sm focus:border-corporate-primary focus:ring-2 focus:ring-corporate-primary/20 transition-all outline-none font-mono"
+                 placeholder="Ej. USER_READ">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
+            Módulo <span class="text-rose-500">*</span>
+          </label>
+          <input type="text" formControlName="permModule"
+                 class="w-full rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-800 dark:border-slate-700 px-4 py-3 text-sm focus:border-corporate-primary focus:ring-2 focus:ring-corporate-primary/20 transition-all outline-none font-mono"
+                 placeholder="Ej. USERS">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
+            Descripción
+          </label>
+          <textarea formControlName="description" rows="2"
+                 class="w-full rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-800 dark:border-slate-700 px-4 py-3 text-sm focus:border-corporate-primary focus:ring-2 focus:ring-corporate-primary/20 transition-all outline-none"
+                 placeholder="Ej. Permite visualizar la lista de usuarios"></textarea>
+        </div>
+      </form>
+    </div>
+
+    <div class="px-8 py-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex justify-end gap-3">
+      <button type="button" (click)="closePermForm()"
+              class="px-6 py-2.5 rounded-xl font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-all">
+        Cancelar
+      </button>
+      <button type="button" (click)="savePermission()" [disabled]="permForm.invalid || isSaving()"
+              class="px-6 py-2.5 rounded-xl font-semibold text-white bg-corporate-primary hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm">
+        {{ isSaving() ? 'Guardando...' : 'Guardar' }}
+      </button>
+    </div>
   </div>
 </div>

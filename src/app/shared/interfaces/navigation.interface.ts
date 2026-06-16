@@ -1,1 +1,1 @@
-export type { MenuItemDTO as NavigationItem } from '../../core/models/auth-response.interface';
+export type { MenuItem as NavigationItem } from '../../core/models/api.models';

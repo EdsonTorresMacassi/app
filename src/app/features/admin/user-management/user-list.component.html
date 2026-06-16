@@ -8,7 +8,7 @@
       {{ filteredUsers().length }} usuarios registrados en el sistema
     </p>
   </div>
-  <button *ngIf="authService.hasPermission('USER_CREATE')"
+  <button *ngIf="authService.hasPermission('USER_WRITE')"
           (click)="openCreateModal()"
           class="inline-flex items-center justify-center gap-2 rounded-lg
                  bg-corporate-primary py-2.5 px-5 text-sm font-semibold text-white
@@ -63,148 +63,21 @@
     </button>
   </div>
 
-  <!-- Loading skeleton -->
-  <div *ngIf="isLoading()" class="p-8 flex flex-col gap-4">
-    <div *ngFor="let i of [1,2,3]"
-         class="h-12 rounded-lg bg-slate-100 dark:bg-slate-700/50 animate-pulse">
-    </div>
+  <!-- Grid -->
+  <div *ngIf="!isLoading()">
+    <app-grid
+      [data]="filteredUsers()"
+      [columns]="columns"
+      ariaLabel="Listado de usuarios"
+      [pageSize]="10"
+      [pageSizeOptions]="[10, 20, 50]"
+      [stickyHeader]="true"
+      [showPagination]="true"
+      [resizableColumns]="true"
+      emptyTitle="No se encontraron usuarios"
+      emptyDescription="No existen usuarios registrados o la búsqueda no arrojó resultados."
+    ></app-grid>
   </div>
-
-  <!-- Tabla -->
-  <div *ngIf="!isLoading()" class="overflow-x-auto">
-    <table class="w-full text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap">
-      <thead class="bg-slate-50 dark:bg-slate-800/80 text-[11px] uppercase
-                    tracking-wider text-slate-400 border-b border-slate-200
-                    dark:border-slate-700">
-        <tr>
-          <th class="px-6 py-3.5 text-left font-semibold">Usuario</th>
-          <th class="px-6 py-3.5 text-left font-semibold">Documento</th>
-          <th class="px-6 py-3.5 text-left font-semibold">Rol</th>
-          <th class="px-6 py-3.5 text-left font-semibold">Perfil</th>
-          <th class="px-6 py-3.5 text-right font-semibold">Acciones</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
-
-        <!-- Sin resultados -->
-        <tr *ngIf="filteredUsers().length === 0">
-          <td colspan="5" class="px-6 py-16 text-center">
-            <div class="flex flex-col items-center gap-3">
-              <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-700
-                          flex items-center justify-center">
-                <i class="fa-solid fa-users text-2xl text-slate-400"></i>
-              </div>
-              <p class="text-slate-500 dark:text-slate-400 text-sm">
-                No se encontraron usuarios
-              </p>
-            </div>
-          </td>
-        </tr>
-
-        <tr *ngFor="let user of filteredUsers()"
-            class="hover:bg-slate-50/80 dark:hover:bg-slate-800/60 transition-colors">
-
-          <!-- Usuario -->
-          <td class="px-6 py-4">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-xl bg-corporate-primary/10 text-corporate-primary
-                          flex items-center justify-center font-bold text-sm flex-shrink-0">
-                {{ user.firstName.charAt(0).toUpperCase() }}
-              </div>
-              <div>
-                <p class="font-semibold text-slate-800 dark:text-white">
-                  {{ user.firstName }} {{ user.lastName }}
-                </p>
-                <p class="text-xs text-slate-400">{{ user.email }}</p>
-              </div>
-            </div>
-          </td>
-
-          <!-- Documento -->
-          <td class="px-6 py-4">
-            <span class="font-mono text-xs">
-              {{ user.docType || '—' }}: {{ user.docNumber || '—' }}
-            </span>
-          </td>
-
-          <!-- Rol -->
-          <td class="px-6 py-4">
-            <span *ngFor="let role of user.roles"
-                  class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1
-                         text-xs font-semibold mr-1
-                         bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400
-                         border border-blue-200/50 dark:border-blue-800/50">
-              <i class="fa-solid fa-shield text-[9px]"></i>
-              {{ role }}
-            </span>
-            <span *ngIf="user.roles.length === 0"
-                  class="text-xs text-slate-400">Sin rol</span>
-          </td>
-
-          <!-- Estado perfil -->
-          <td class="px-6 py-4">
-            <span *ngIf="user.profileComplete"
-                  class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1
-                         text-xs font-semibold bg-emerald-50 text-emerald-700
-                         dark:bg-emerald-900/30 dark:text-emerald-400
-                         border border-emerald-200/50">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              Completo
-            </span>
-            <span *ngIf="!user.profileComplete"
-                  class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1
-                         text-xs font-semibold bg-amber-50 text-amber-700
-                         dark:bg-amber-900/30 dark:text-amber-400
-                         border border-amber-200/50">
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-              Incompleto
-            </span>
-          </td>
-
-          <!-- Acciones -->
-          <td class="px-6 py-4">
-            <div class="flex items-center justify-end gap-1">
-              <button *ngIf="authService.hasPermission('USER_UPDATE')"
-                      (click)="openEditModal(user)"
-                      title="Editar usuario"
-                      class="w-8 h-8 flex items-center justify-center rounded-lg
-                             text-slate-400 hover:text-amber-500 hover:bg-amber-50
-                             dark:hover:bg-amber-900/20 transition-all">
-                <i class="fa-solid fa-pen-to-square text-sm"></i>
-              </button>
-              <button *ngIf="authService.hasPermission('USER_DELETE')"
-                      (click)="openDisableModal(user)"
-                      title="Deshabilitar usuario"
-                      class="w-8 h-8 flex items-center justify-center rounded-lg
-                             text-slate-400 hover:text-rose-500 hover:bg-rose-50
-                             dark:hover:bg-rose-900/20 transition-all">
-                <i class="fa-solid fa-ban text-sm"></i>
-              </button>
-            </div>
-          </td>
-
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Footer de tabla -->
-  <div *ngIf="!isLoading() && filteredUsers().length > 0"
-       class="border-t border-slate-200 dark:border-slate-700 px-6 py-4
-              flex items-center justify-between bg-white dark:bg-slate-800">
-    <p class="text-sm text-slate-500 dark:text-slate-400">
-      Mostrando
-      <span class="font-semibold text-slate-700 dark:text-slate-200">
-        {{ filteredUsers().length }}
-      </span>
-      de
-      <span class="font-semibold text-slate-700 dark:text-slate-200">
-        {{ users().length }}
-      </span>
-      registros
-    </p>
-  </div>
-
 </div>
 
 <!-- Modal crear usuario -->

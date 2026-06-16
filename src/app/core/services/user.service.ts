@@ -3,10 +3,11 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { ApiResponse } from '../models/api.models';
 
 export interface UserResponse {
-  personId: string;
-  keycloakSub: string;
+  personId: number;
+  keycloakId: string;
   username: string;
   firstName: string;
   lastName: string;
@@ -15,7 +16,11 @@ export interface UserResponse {
   phone?: string;
   docType?: string;
   docNumber?: string;
+  gender?: string;
+  birthDate?: string;
+  address?: string;
   nationality?: string;
+  status?: string;
   profileComplete: boolean;
   roles: string[];
 }
@@ -29,6 +34,9 @@ export interface CreateUserRequest {
   password: string;
   docType: string;
   docNumber: string;
+  gender?: string;
+  birthDate?: string;
+  address?: string;
   phone?: string;
   nationality?: string;
   roleName: string;
@@ -42,14 +50,12 @@ export interface UpdateUserRequest {
   nationality?: string;
   docType?: string;
   docNumber?: string;
+  gender?: string;
+  birthDate?: string;
+  address?: string;
+  roles?: string[];
 }
 
-export interface ApiResponse<T> {
-  success: boolean;
-  status: number;
-  message: string;
-  data: T;
-}
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
@@ -61,7 +67,7 @@ export class UserService {
       .pipe(map(r => r.data));
   }
 
-  findById(personId: string): Observable<UserResponse> {
+  findById(personId: number): Observable<UserResponse> {
     return this.http.get<ApiResponse<UserResponse>>(`${this.BASE}/${personId}`)
       .pipe(map(r => r.data));
   }
@@ -71,12 +77,21 @@ export class UserService {
       .pipe(map(r => r.data));
   }
 
-  update(personId: string, payload: UpdateUserRequest): Observable<UserResponse> {
+  update(personId: number, payload: UpdateUserRequest): Observable<UserResponse> {
     return this.http.put<ApiResponse<UserResponse>>(`${this.BASE}/${personId}`, payload)
       .pipe(map(r => r.data));
   }
 
-  disable(personId: string): Observable<void> {
+  disable(personId: number): Observable<void> {
     return this.http.delete<void>(`${this.BASE}/${personId}`);
   }
+
+  unlock(personId: number): Observable<void> {
+    return this.http.post<void>(`${this.BASE}/${personId}/unlock`, {});
+  }
+
+  restore(personId: number): Observable<void> {
+    return this.http.post<void>(`${this.BASE}/${personId}/restore`, {});
+  }
 }
+

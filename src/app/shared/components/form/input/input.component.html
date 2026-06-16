@@ -1,0 +1,50 @@
+<div class="flex flex-col mb-4">
+  @if (label()) {
+    <label
+      [class]="
+        isInvalid || hasError()
+          ? 'block text-sm font-semibold text-rose-500 mb-1.5'
+          : 'block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5'
+      "
+    >
+      {{ label() }}
+      @if (isRequired) {
+        <span class="text-rose-400">*</span>
+      }
+    </label>
+  }
+
+  <div class="relative">
+    <!-- Icono izquierdo -->
+    <div
+      class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500"
+    >
+      <ng-content select="[leftIcon]"></ng-content>
+    </div>
+
+    <input
+      [type]="type()"
+      [value]="value()"
+      [disabled]="disabled()"
+      [autocomplete]="autocomplete()"
+      [attr.name]="label().toLowerCase().replace(' ', '-')"
+      (input)="handleInput($event)"
+      (blur)="onTouched()"
+      [class]="getInputClasses()"
+      [placeholder]="placeholder()"
+      [style.transform]="'translateZ(0)'"
+    />
+
+    <!-- Icono derecho (botones o iconos) -->
+    <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+      <ng-content select="[rightIcon]"></ng-content>
+    </div>
+  </div>
+
+  @if (currentErrorMessage) {
+    <p class="mt-1.5 text-xs font-medium text-rose-500 flex items-start gap-1">
+      <i class="fa-solid fa-circle-exclamation mt-0.5"></i>
+      {{ currentErrorMessage }}
+    </p>
+  }
+</div>

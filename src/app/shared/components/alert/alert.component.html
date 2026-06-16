@@ -1,0 +1,40 @@
+@if (visible()) {
+  <div [class]="alertClasses()" role="alert">
+    <div [class]="iconClasses()">
+      <lucide-icon [img]="icon()" [size]="18"></lucide-icon>
+    </div>
+
+    <div class="min-w-0 flex-1 space-y-3">
+      @if (hasStructuredContent()) {
+        <div class="space-y-1">
+          @if (title) {
+            <h4 class="text-sm font-semibold leading-5 text-current">{{ title }}</h4>
+          }
+
+          @if (description) {
+            <p class="text-sm leading-6 opacity-90 text-current">{{ description }}</p>
+          }
+        </div>
+      }
+
+      <div class="text-sm leading-6 opacity-90 text-current empty:hidden">
+        <ng-content></ng-content>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2 pt-1 empty:hidden">
+        <ng-content select="[alertActions]"></ng-content>
+      </div>
+    </div>
+
+    @if (dismissible) {
+      <button
+        type="button"
+        [class]="closeBtnClasses()"
+        aria-label="Cerrar alerta"
+        (click)="close()"
+      >
+        <lucide-icon [img]="CloseIcon" [size]="16"></lucide-icon>
+      </button>
+    }
+  </div>
+}

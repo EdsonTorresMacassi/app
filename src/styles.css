@@ -1,0 +1,106 @@
+/* ═══════════════════════════════════════════════════════════════
+   THEME CSS VARIABLES — Definición de colores por tema de acento
+   ThemeService aplica: theme-emerald | theme-blue | theme-purple | theme-slate
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --color-primary:       #10B981;  /* Default: emerald */
+  --color-primary-hover: #059669;
+  --color-primary-rgb:   16, 185, 129;
+}
+
+.theme-emerald {
+  --color-primary:       #10B981;
+  --color-primary-hover: #059669;
+  --color-primary-rgb:   16, 185, 129;
+}
+
+.theme-blue {
+  --color-primary:       #2563EB;
+  --color-primary-hover: #1D4ED8;
+  --color-primary-rgb:   37, 99, 235;
+}
+
+.theme-purple {
+  --color-primary:       #7C3AED;
+  --color-primary-hover: #6D28D9;
+  --color-primary-rgb:   124, 58, 237;
+}
+
+.theme-slate {
+  --color-primary:       #475569;
+  --color-primary-hover: #334155;
+  --color-primary-rgb:   71, 85, 105;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GLOBAL UTILITIES — Inputs y selectores de formularios
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Field input — base style for all text/date inputs */
+.field-input {
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  padding: 0.65rem 0.875rem;
+  font-size: 0.875rem;
+  color: #1e293b;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+}
+.field-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.12);
+  background: #ffffff;
+}
+.field-input:hover:not(:focus) { border-color: #cbd5e1; }
+.field-input::placeholder { color: #94a3b8; }
+
+.dark .field-input {
+  border-color: #334155;
+  background: #1e293b;
+  color: #f1f5f9;
+}
+.dark .field-input:focus { border-color: var(--color-primary); }
+.dark .field-input::placeholder { color: #475569; }
+
+/* Field select button — visualmente idéntico al field-input */
+.field-select-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  padding: 0.65rem 0.875rem;
+  font-size: 0.875rem;
+  color: #1e293b;
+  cursor: pointer;
+  text-align: left;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+  min-height: 44px;
+}
+.field-select-btn:hover { border-color: #cbd5e1; background: #ffffff; }
+.field-select-btn.open {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.12);
+  background: #ffffff;
+}
+
+.dark .field-select-btn {
+  border-color: #334155;
+  background: #1e293b;
+  color: #f1f5f9;
+}
+.dark .field-select-btn:hover { border-color: #475569; background: #1e293b; }
+
+/* ═══════════════════════════════════════════════════════════════
+   SCROLLBAR — Ocultar scrollbar manteniendo funcionalidad
+   ═══════════════════════════════════════════════════════════════ */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }

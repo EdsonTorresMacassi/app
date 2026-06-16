@@ -10,8 +10,8 @@ export const authGuard: CanActivateFn = () => {
   const router = inject(Router);
 
   // Si Keycloak dice que está logueado pero no tenemos el contexto
-  // de negocio en memoria, cargarlo primero
-  if (keycloakService.isLoggedIn() && !authService.currentUser()) {
+  // de negocio cargado en memoria en ESTA sesión, cargarlo primero
+  if (keycloakService.isLoggedIn() && !authService.isContextLoaded()) {
     return from(authService.loadBusinessContext()).pipe(
       switchMap(ctx => {
         if (ctx.needsProfileCompletion) {
