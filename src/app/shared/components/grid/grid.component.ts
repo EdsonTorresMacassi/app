@@ -50,6 +50,11 @@ export class GridComponent<TData extends object = any> {
   readonly stripedRows = input(false);
   readonly dense = input(false);
   readonly resizableColumns = input(false);
+  
+  // Soporte para Server-Side Pagination
+  readonly manualPagination = input(false);
+  readonly externalPageCount = input<number | undefined>(undefined);
+  readonly externalRowCount = input<number | undefined>(undefined);
 
   readonly pageIndex = model(0);
   readonly pageSize = model(10);
@@ -99,10 +104,13 @@ export class GridComponent<TData extends object = any> {
       maxSize: 480,
       enableResizing: this.resizableColumns(),
     },
+    manualPagination: this.manualPagination(),
+    pageCount: this.externalPageCount(),
+    rowCount: this.externalRowCount(),
   }));
 
   protected readonly rows = computed(() => this.table().getRowModel().rows);
-  protected readonly totalRows = computed(() => this.data().length);
+  protected readonly totalRows = computed(() => this.manualPagination() ? (this.externalRowCount() ?? 0) : this.data().length);
   protected readonly visibleColumnCount = computed(() => this.table().getVisibleLeafColumns().length);
   protected readonly hasFooter = computed(() =>
     this.table()
@@ -153,7 +161,7 @@ export class GridComponent<TData extends object = any> {
 
   protected getHeaderCellClasses(header: Header<TData, unknown>): string {
     return [
-      'group relative border-b border-r last:border-r-0 border-slate-200 bg-slate-50 px-4 py-3 text-left align-middle text-xs font-semibold uppercase tracking-wider text-slate-600 hover:z-40 focus-within:z-40',
+      'group relative border-b border-r last:border-r-0 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-3 text-left align-middle text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:z-40 focus-within:z-40',
       this.stickyHeader() ? 'sticky top-0 z-20' : '',
       this.getAlignmentClass((header.column.columnDef.meta as GridColumnMeta | undefined)?.align),
       (header.column.columnDef.meta as GridColumnMeta | undefined)?.headerClassName ?? '',
@@ -164,9 +172,9 @@ export class GridComponent<TData extends object = any> {
 
   protected getBodyCellClasses(cell: Cell<TData, unknown>, rowIndex: number): string {
     return [
-      'border-b border-r last:border-r-0 border-slate-100 px-4 py-3 align-middle text-sm text-slate-700',
+      'border-b border-r last:border-r-0 border-slate-100 dark:border-slate-700/50 px-4 py-3 align-middle text-sm text-slate-700 dark:text-slate-300',
       this.dense() ? 'py-2.5' : '',
-      this.stripedRows() && rowIndex % 2 === 1 ? 'bg-slate-50/50' : 'bg-white',
+      this.stripedRows() && rowIndex % 2 === 1 ? 'bg-slate-50/50 dark:bg-slate-800/40' : 'bg-white dark:bg-transparent',
       this.getAlignmentClass((cell.column.columnDef.meta as GridColumnMeta | undefined)?.align),
       (cell.column.columnDef.meta as GridColumnMeta | undefined)?.cellClassName ?? '',
     ]
@@ -176,7 +184,7 @@ export class GridComponent<TData extends object = any> {
 
   protected getFooterCellClasses(header: Header<TData, unknown>): string {
     return [
-      'border-t border-r last:border-r-0 border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800',
+      'border-t border-r last:border-r-0 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-3 text-sm font-semibold text-slate-800 dark:text-slate-200',
       this.getAlignmentClass((header.column.columnDef.meta as GridColumnMeta | undefined)?.align),
       (header.column.columnDef.meta as GridColumnMeta | undefined)?.footerClassName ?? '',
     ]
@@ -194,10 +202,12 @@ export class GridComponent<TData extends object = any> {
     const size = isHeaderTarget ? target.getSize() : column.getSize();
     const width = `${size}px`;
     const pinned = pinnedColumn?.getIsPinned() ?? false;
+    // Soporte para Dark Mode en variables si se inyectan en estilos CSS, pero por defecto heredamos el transparente 
+    // a menos que requiramos el color de fondo para la tabla
     const background =
       section === 'body'
-        ? 'var(--color-card, #ffffff)'
-        : 'var(--color-header, #f8fafc)'; // slate-50
+        ? 'var(--color-card, inherit)'
+        : 'var(--color-header, inherit)';
 
     if (!pinned || !pinnedColumn) {
       // Si la tabla no es redimensionable, dejamos que el navegador asigne anchos automáticos
@@ -295,6 +305,18 @@ export class GridComponent<TData extends object = any> {
   protected goToNextPage(): void {
     if (this.table().getCanNextPage()) {
       this.table().nextPage();
+    }
+  }
+
+  protected goToFirstPage(): void {
+    if (this.table().getCanPreviousPage()) {
+      this.table().firstPage();
+    }
+  }
+
+  protected goToLastPage(): void {
+    if (this.table().getCanNextPage()) {
+      this.table().lastPage();
     }
   }
 

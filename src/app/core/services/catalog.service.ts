@@ -1,18 +1,17 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { tap, shareReplay, map } from 'rxjs/operators';
+import { HttpUtils } from '../utils/http.utils';
+import { CatalogItem } from '../models/catalog/catalog.model';
 
-export interface CatalogItem {
-  catalogId?: number;
-  catalogType?: string;
-  parentId?: number;
-  code: string;
-  name: string;
-  description: string;
-  isActive: boolean;
-  sortOrder: number;
+export interface CatalogPageResponse {
+  content: CatalogItem[];
+  totalElements?: number;
+  totalPages?: number;
+  size?: number;
+  number?: number;
 }
 
 @Injectable({
@@ -22,40 +21,46 @@ export class CatalogService {
   private http = inject(HttpClient);
   private cache = new Map<string, Observable<CatalogItem[]>>();
 
-  /**
-   * Obtiene los catálogos activos por el código del padre (ej: 'GENDER')
-   */
   getActiveCatalogsByType(parentCode: string): Observable<CatalogItem[]> {
-    if (!this.cache.has(parentCode)) {
-      const request$ = this.http.get<CatalogItem[]>(`${environment.apiUrl}/catalogs/${parentCode}`)
-        .pipe(shareReplay(1));
-      this.cache.set(parentCode, request$);
-    }
-    return this.cache.get(parentCode)!;
+    const timestamp = new Date().getTime();
+    return this.http.get<any>(`${environment.apiUrl}/catalogs/${parentCode}?_t=${timestamp}`)
+      .pipe(
+        map(res => res?.data || res || []),
+        shareReplay(1)
+      );
   }
 
   // --- Endpoints Administrativos ---
 
-  getCatalogMasters(): Observable<CatalogItem[]> {
-    return this.http.get<any>(`${environment.apiUrl}/admin/catalogs/types`).pipe(
-      map((res: any) => {
-        // El backend puede devolver un Page<> o un array directo
-        if (Array.isArray(res)) return res;
-        if (res?.data && Array.isArray(res.data)) return res.data;
-        if (res?.content && Array.isArray(res.content)) return res.content;
-        if (res?.data?.content && Array.isArray(res.data.content)) return res.data.content;
-        return [];
+  getCatalogMasters(page = 0, size = 10, keyword?: string, status?: string): Observable<CatalogPageResponse> {
+    // Si status viene como string 'ACTIVE' o 'INACTIVE', lo enviamos como boolean
+    let statusBool: boolean | undefined = undefined;
+    if (status === 'ACTIVE') statusBool = true;
+    if (status === 'INACTIVE') statusBool = false;
+    
+    const params = HttpUtils.buildCleanParams({ page, size, keyword, status: statusBool });
+    return this.http.get<unknown>(`${environment.apiUrl}/admin/catalogs/types`, { params }).pipe(
+      map((res: unknown) => {
+        const response = res as { data?: CatalogPageResponse, content?: CatalogItem[] };
+        // Backend retorna ApiResponse<Page<CatalogResponseDTO>>
+        if (response?.data?.content !== undefined) return response.data;
+        if (response?.content !== undefined) return response as CatalogPageResponse;
+        return { content: [] };
       })
     );
   }
 
-  getCatalogsAdmin(parentId: number, page: number = 0, size: number = 10): Observable<any> {
-    return this.http.get<any>(`${environment.apiUrl}/admin/catalogs/items?type=${parentId}&page=${page}&size=${size}`).pipe(
-      map((res: any) => {
-        // Backend retorna ApiResponse<Page<CatalogResponseDTO>>
-        // Necesitamos el Page object con su campo 'content'
-        if (res?.data?.content !== undefined) return res.data;  // ApiResponse wrapper
-        if (res?.content !== undefined) return res;             // Page directo
+  getCatalogsAdmin(parentId: number, page = 0, size = 10, keyword?: string, status?: string): Observable<CatalogPageResponse> {
+    let statusBool: boolean | undefined = undefined;
+    if (status === 'ACTIVE') statusBool = true;
+    if (status === 'INACTIVE') statusBool = false;
+
+    const params = HttpUtils.buildCleanParams({ type: parentId, page, size, keyword, status: statusBool });
+    return this.http.get<unknown>(`${environment.apiUrl}/admin/catalogs/items`, { params }).pipe(
+      map((res: unknown) => {
+        const response = res as { data?: CatalogPageResponse, content?: CatalogItem[] };
+        if (response?.data?.content !== undefined) return response.data;
+        if (response?.content !== undefined) return response as CatalogPageResponse;
         return { content: [] };
       })
     );
@@ -64,7 +69,7 @@ export class CatalogService {
   createCatalog(catalog: Partial<CatalogItem>, cacheKey?: string): Observable<CatalogItem> {
     return this.http.post<CatalogItem>(`${environment.apiUrl}/admin/catalogs`, catalog).pipe(
       tap(() => {
-        if (cacheKey) this.clearCache(cacheKey);
+        this.clearCache(cacheKey);
       })
     );
   }
@@ -72,7 +77,7 @@ export class CatalogService {
   updateCatalog(id: number, catalog: Partial<CatalogItem>, cacheKey?: string): Observable<CatalogItem> {
     return this.http.put<CatalogItem>(`${environment.apiUrl}/admin/catalogs/${id}`, catalog).pipe(
       tap(() => {
-        if (cacheKey) this.clearCache(cacheKey);
+        this.clearCache(cacheKey);
       })
     );
   }
@@ -80,7 +85,7 @@ export class CatalogService {
   toggleCatalogStatus(id: number, cacheKey?: string): Observable<void> {
     return this.http.patch<void>(`${environment.apiUrl}/admin/catalogs/${id}/status`, {}).pipe(
       tap(() => {
-        if (cacheKey) this.clearCache(cacheKey);
+        this.clearCache(cacheKey);
       })
     );
   }
@@ -88,12 +93,13 @@ export class CatalogService {
   deleteCatalog(id: number, cacheKey?: string): Observable<void> {
     return this.http.delete<void>(`${environment.apiUrl}/admin/catalogs/${id}`).pipe(
       tap(() => {
-        if (cacheKey) this.clearCache(cacheKey);
+        this.clearCache(cacheKey);
       })
     );
   }
 
-  clearCache(key: string) {
-    this.cache.delete(key);
+  clearCache(key?: string) {
+    // Ya no es necesario limpiar el caché manual del frontend porque se delega al backend (Redis).
+    // Esto previene los bugs de desincronización entre múltiples pestañas del navegador.
   }
 }

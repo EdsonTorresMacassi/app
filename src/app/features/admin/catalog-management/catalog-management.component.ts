@@ -1,7 +1,8 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CatalogService, CatalogItem } from '../../../core/services/catalog.service';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { CatalogService } from '../../../core/services/catalog.service';
+import { CatalogItem } from '../../../core/models/catalog/catalog.model';
+import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { createColumnHelper, flexRenderComponent } from '@tanstack/angular-table';
 import { GridComponent, GridColumnDef } from '@shared/components/grid/grid.component';
 import { CatalogStatusCellComponent, CatalogActionsCellComponent } from './cells/catalog-grid-cells.component';
@@ -13,10 +14,10 @@ const helper = createColumnHelper<CatalogItem>();
 @Component({
   selector: 'app-catalog-management',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, GridComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, GridComponent],
   template: `
     <div class="space-y-6">
-      
+
       <!-- Header -->
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -35,49 +36,67 @@ const helper = createColumnHelper<CatalogItem>();
       </div>
 
       <!-- Level 1: Master Types List -->
-      <div *ngIf="!selectedMaster()" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div *ngFor="let master of catalogMasters()" 
-             class="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm border border-slate-200 
-                    dark:border-slate-700 hover:border-corporate-primary hover:shadow-md transition-all cursor-pointer relative group"
-             (click)="selectMaster(master)">
-          
-          <!-- Actions for Master -->
-          <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-            <button (click)="openForm(master); $event.stopPropagation()" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-corporate-primary flex items-center justify-center" title="Editar">
-              <i class="fa-solid fa-pen text-xs"></i>
-            </button>
-            <button (click)="deleteItem(master.catalogId!); $event.stopPropagation()" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-rose-500 flex items-center justify-center" title="Eliminar">
-              <i class="fa-solid fa-trash-can text-xs"></i>
-            </button>
+      <div *ngIf="!selectedMaster()">
+        <!-- Barra de Filtros para Maestros -->
+        <div class="mb-4 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div class="relative w-full">
+              <label class="block text-xs font-semibold text-slate-500 mb-1">Búsqueda</label>
+              <span class="absolute left-3 top-[34px] -translate-y-1/2 text-slate-400">
+                <i class="fa-solid fa-magnifying-glass text-sm"></i>
+              </span>
+              <input type="text" placeholder="Código o nombre..."
+                     [ngModel]="filtersMasters().keyword"
+                     (ngModelChange)="filtersMasters.update(f => ({...f, keyword: $event}))"
+                     class="w-full rounded-lg border border-slate-200 bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white py-2 pl-9 pr-3 text-sm outline-none focus:border-corporate-primary focus:ring-1 focus:ring-corporate-primary transition-all placeholder-slate-400" />
+            </div>
+            <div class="w-full">
+              <label class="block text-xs font-semibold text-slate-500 mb-1">Estado</label>
+              <select [ngModel]="filtersMasters().status"
+                      (ngModelChange)="filtersMasters.update(f => ({...f, status: $event}))"
+                      class="w-full rounded-lg border border-slate-200 bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white py-2 px-3 text-sm outline-none focus:border-corporate-primary focus:ring-1 focus:ring-corporate-primary transition-all cursor-pointer">
+                <option value="">Todos los estados</option>
+                <option value="ACTIVE">Activo</option>
+                <option value="INACTIVE">Inactivo</option>
+              </select>
+            </div>
+            <div class="flex items-end justify-end gap-3 w-full">
+              <button (click)="clearFiltersMasters()" class="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600 shadow-sm transition-all active:scale-[0.98]">
+                <i class="fa-solid fa-eraser text-xs"></i> Limpiar
+              </button>
+              <button (click)="applyFiltersMasters()" class="flex items-center gap-2 rounded-lg bg-corporate-primary px-4 py-2 text-sm font-semibold text-white hover:bg-opacity-90 shadow-sm transition-all active:scale-[0.98]">
+                <i class="fa-solid fa-filter text-xs"></i> Aplicar
+              </button>
+            </div>
           </div>
+        </div>
 
-          <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-lg bg-corporate-primary/10 flex items-center justify-center flex-shrink-0">
-              <i class="fa-solid fa-folder-tree text-corporate-primary text-xl"></i>
-            </div>
-            <div>
-              <h3 class="font-bold text-slate-800 dark:text-white">{{ master.name }}</h3>
-              <p class="text-xs text-slate-500 mt-1 font-mono">{{ master.code }}</p>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Loading State Level 1 -->
-        <div *ngIf="isLoadingMasters()" class="col-span-full py-12 flex justify-center">
-          <svg class="h-8 w-8 animate-spin text-corporate-primary" viewBox="0 0 24 24" fill="none">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-          </svg>
-        </div>
-        
-        <div *ngIf="catalogMasters().length === 0 && !isLoadingMasters()" class="col-span-full py-12 text-center text-slate-500">
-          No hay catálogos maestros creados. Haz clic en "Nuevo Maestro" para empezar.
-        </div>
+        <app-grid
+          [data]="catalogMasters()"
+          [columns]="masterColumns"
+          ariaLabel="Listado de catálogos maestros"
+
+          [manualPagination]="true"
+          [externalPageCount]="mastersTotalPages()"
+          [externalRowCount]="mastersTotalElements()"
+          [pageIndex]="mastersPageIndex()"
+          (pageIndexChange)="onMastersPageChange($event)"
+          [pageSize]="mastersPageSize()"
+          (pageSizeChange)="onMastersPageSizeChange($event)"
+          [pageSizeOptions]="[10, 20, 50, 100]"
+
+          [stickyHeader]="true"
+          [showPagination]="true"
+          [resizableColumns]="true"
+          [loading]="isLoadingMasters()"
+          emptyTitle="No hay catálogos maestros"
+          emptyDescription="No existen catálogos maestros creados o no hay coincidencias."
+        ></app-grid>
       </div>
 
       <!-- Level 2: Items List for Selected Master -->
-      <div *ngIf="selectedMaster()" class="space-y-6">
-        
+      <div *ngIf="selectedMaster()" class="space-y-4">
+
         <div class="flex items-center justify-between bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
           <div class="flex items-center gap-3">
             <button (click)="backToMasters()" class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-corporate-primary transition-colors">
@@ -90,13 +109,55 @@ const helper = createColumnHelper<CatalogItem>();
           </button>
         </div>
 
+        <!-- Barra de Filtros para Ítems -->
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div class="relative w-full">
+              <label class="block text-xs font-semibold text-slate-500 mb-1">Búsqueda</label>
+              <span class="absolute left-3 top-[34px] -translate-y-1/2 text-slate-400">
+                <i class="fa-solid fa-magnifying-glass text-sm"></i>
+              </span>
+              <input type="text" placeholder="Código o nombre..."
+                     [ngModel]="filtersItems().keyword"
+                     (ngModelChange)="filtersItems.update(f => ({...f, keyword: $event}))"
+                     class="w-full rounded-lg border border-slate-200 bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white py-2 pl-9 pr-3 text-sm outline-none focus:border-corporate-primary focus:ring-1 focus:ring-corporate-primary transition-all placeholder-slate-400" />
+            </div>
+            <div class="w-full">
+              <label class="block text-xs font-semibold text-slate-500 mb-1">Estado</label>
+              <select [ngModel]="filtersItems().status"
+                      (ngModelChange)="filtersItems.update(f => ({...f, status: $event}))"
+                      class="w-full rounded-lg border border-slate-200 bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white py-2 px-3 text-sm outline-none focus:border-corporate-primary focus:ring-1 focus:ring-corporate-primary transition-all cursor-pointer">
+                <option value="">Todos los estados</option>
+                <option value="ACTIVE">Activo</option>
+                <option value="INACTIVE">Inactivo</option>
+              </select>
+            </div>
+            <div class="flex items-end justify-end gap-3 w-full">
+              <button (click)="clearFiltersItems()" class="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600 shadow-sm transition-all active:scale-[0.98]">
+                <i class="fa-solid fa-eraser text-xs"></i> Limpiar
+              </button>
+              <button (click)="applyFiltersItems()" class="flex items-center gap-2 rounded-lg bg-corporate-primary px-4 py-2 text-sm font-semibold text-white hover:bg-opacity-90 shadow-sm transition-all active:scale-[0.98]">
+                <i class="fa-solid fa-filter text-xs"></i> Aplicar
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div class="mt-4">
           <app-grid
             [data]="items()"
             [columns]="columns"
             ariaLabel="Listado de ítems de catálogo"
-            [pageSize]="10"
-            [pageSizeOptions]="[10, 20, 50]"
+
+            [manualPagination]="true"
+            [externalPageCount]="itemsTotalPages()"
+            [externalRowCount]="itemsTotalElements()"
+            [pageIndex]="itemsPageIndex()"
+            (pageIndexChange)="onItemsPageChange($event)"
+            [pageSize]="itemsPageSize()"
+            (pageSizeChange)="onItemsPageSizeChange($event)"
+            [pageSizeOptions]="[10, 20, 50, 100]"
+
             [stickyHeader]="true"
             [showPagination]="true"
             [resizableColumns]="true"
@@ -199,12 +260,72 @@ export class CatalogManagementComponent implements OnInit {
     })
   ];
 
+  readonly masterColumns: GridColumnDef<CatalogItem>[] = [
+    helper.accessor('code', { 
+      id: 'codigo',
+      header: 'Código',
+      size: 150,
+      enableSorting: true
+    }),
+    helper.accessor('name', {
+      id: 'nombre',
+      header: 'Nombre Maestro',
+      size: 250,
+      enableSorting: true
+    }),
+    helper.accessor('sortOrder', {
+      id: 'orden',
+      header: 'Orden',
+      size: 100,
+      enableSorting: true
+    }),
+    helper.accessor('isActive', {
+      id: 'estado',
+      header: 'Estado',
+      size: 120,
+      enableSorting: true,
+      meta: { align: 'center' },
+      cell: (info) => flexRenderComponent(CatalogStatusCellComponent, { inputs: { context: info } })
+    }),
+    helper.display({
+      id: 'acciones',
+      header: 'Acciones',
+      size: 180,
+      meta: {
+        align: 'right',
+        onEdit: (item: CatalogItem) => this.openForm(item),
+        onToggleStatus: (id: number, status: boolean) => this.toggleItemStatus(id, status),
+        onDelete: (id: number) => this.deleteItem(id),
+        onViewItems: (item: CatalogItem) => this.selectMaster(item)
+      },
+      cell: (info) => flexRenderComponent(CatalogActionsCellComponent, { inputs: { context: info } })
+    })
+  ];
+
   catalogMasters = signal<CatalogItem[]>([]);
   selectedMaster = signal<CatalogItem | null>(null);
   items = signal<CatalogItem[]>([]);
-  
+
   isLoadingMasters = signal(false);
   isLoadingItems = signal(false);
+
+  // Estado de Paginación Server-Side para Maestros
+  mastersPageIndex = signal(0);
+  mastersPageSize = signal(10);
+  mastersTotalElements = signal(0);
+  mastersTotalPages = signal(0);
+
+  // Estado de Filtros para Maestros
+  filtersMasters = signal({ keyword: '', status: '' });
+
+  // Estado de Paginación Server-Side para ítems
+  itemsPageIndex = signal(0);
+  itemsPageSize = signal(10);
+  itemsTotalElements = signal(0);
+  itemsTotalPages = signal(0);
+
+  // Estado de Filtros para Ítems
+  filtersItems = signal({ keyword: '', status: '' });
 
   showForm = signal(false);
   editingItem = signal<CatalogItem | null>(null);
@@ -224,35 +345,98 @@ export class CatalogManagementComponent implements OnInit {
 
   loadMasters() {
     this.isLoadingMasters.set(true);
-    this.catalogService.getCatalogMasters().subscribe({
-      next: masters => {
-        this.catalogMasters.set(masters);
+    const filters = this.filtersMasters();
+    this.catalogService.getCatalogMasters(this.mastersPageIndex(), this.mastersPageSize(), filters.keyword, filters.status).subscribe({
+      next: res => {
+        this.catalogMasters.set(res.content || []);
+        this.mastersTotalElements.set(res.totalElements || 0);
+        this.mastersTotalPages.set(res.totalPages || 0);
         this.isLoadingMasters.set(false);
       },
       error: () => this.isLoadingMasters.set(false)
     });
   }
 
+  onMastersPageChange(newPageIndex: number) {
+    this.mastersPageIndex.set(newPageIndex);
+    this.loadMasters();
+  }
+
+  onMastersPageSizeChange(newPageSize: number) {
+    this.mastersPageSize.set(newPageSize);
+    this.mastersPageIndex.set(0);
+    this.loadMasters();
+  }
+
+  applyFiltersMasters() {
+    this.mastersPageIndex.set(0);
+    this.loadMasters();
+  }
+
+  clearFiltersMasters() {
+    this.filtersMasters.set({ keyword: '', status: '' });
+    this.mastersPageIndex.set(0);
+    this.loadMasters();
+  }
+
   selectMaster(master: CatalogItem) {
     this.selectedMaster.set(master);
+    this.itemsPageIndex.set(0);
+    this.filtersItems.set({ keyword: '', status: '' });
     this.loadItems(master.catalogId!);
   }
 
   backToMasters() {
     this.selectedMaster.set(null);
     this.items.set([]);
-    this.loadMasters(); 
+    this.itemsPageIndex.set(0);
+    this.itemsTotalElements.set(0);
+    this.filtersItems.set({ keyword: '', status: '' });
+    this.loadMasters();
   }
 
   loadItems(parentId: number) {
     this.isLoadingItems.set(true);
-    this.catalogService.getCatalogsAdmin(parentId, 0, 100).subscribe({
+    const filters = this.filtersItems();
+    this.catalogService.getCatalogsAdmin(parentId, this.itemsPageIndex(), this.itemsPageSize(), filters.keyword, filters.status).subscribe({
       next: res => {
         this.items.set(res.content || []);
+        this.itemsTotalElements.set(res.totalElements || 0);
+        this.itemsTotalPages.set(res.totalPages || 0);
         this.isLoadingItems.set(false);
       },
       error: () => this.isLoadingItems.set(false)
     });
+  }
+
+  onItemsPageChange(newPageIndex: number) {
+    this.itemsPageIndex.set(newPageIndex);
+    if (this.selectedMaster()) {
+      this.loadItems(this.selectedMaster()!.catalogId!);
+    }
+  }
+
+  onItemsPageSizeChange(newPageSize: number) {
+    this.itemsPageSize.set(newPageSize);
+    this.itemsPageIndex.set(0);
+    if (this.selectedMaster()) {
+      this.loadItems(this.selectedMaster()!.catalogId!);
+    }
+  }
+
+  applyFiltersItems() {
+    this.itemsPageIndex.set(0);
+    if (this.selectedMaster()) {
+      this.loadItems(this.selectedMaster()!.catalogId!);
+    }
+  }
+
+  clearFiltersItems() {
+    this.filtersItems.set({ keyword: '', status: '' });
+    this.itemsPageIndex.set(0);
+    if (this.selectedMaster()) {
+      this.loadItems(this.selectedMaster()!.catalogId!);
+    }
   }
 
   openForm(item?: CatalogItem) {
@@ -385,3 +569,4 @@ export class CatalogManagementComponent implements OnInit {
     });
   }
 }
+

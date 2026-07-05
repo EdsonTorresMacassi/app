@@ -2,10 +2,13 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { RoleService } from '../../../core/services/role.service';
 import { createColumnHelper, flexRenderComponent } from '@tanstack/angular-table';
-import { UserService, UserResponse } from '../../../core/services/user.service';
+import { UserService } from '../../../core/services/user.service';
+import { UserResponse } from '../../../core/models/user/user.model';
 import { AuthService } from '../../../core/services/auth.service';
-import { CatalogService, CatalogItem } from '../../../core/services/catalog.service';
+import { CatalogService } from '../../../core/services/catalog.service';
+import { CatalogItem } from '../../../core/models/catalog/catalog.model';
 import { CreateUserFormComponent } from './create-user-form.component';
 import { EditUserFormComponent } from './edit-user-form.component';
 import { GridComponent, GridColumnDef } from '@shared/components/grid/grid.component';
@@ -17,6 +20,7 @@ import {
   UserStatusBadgeCellComponent
 } from './cells/user-grid-cells.component';
 import { ToastService } from '../../../core/services/toast.service';
+import Swal from 'sweetalert2';
 
 const helper = createColumnHelper<UserResponse>();
 
@@ -29,30 +33,33 @@ const helper = createColumnHelper<UserResponse>();
 export class UserListComponent implements OnInit {
   private userService = inject(UserService);
   private catalogService = inject(CatalogService);
+  private roleService = inject(RoleService);
   private toastService = inject(ToastService);
   authService = inject(AuthService);
 
   users = signal<UserResponse[]>([]);
   docTypes = signal<CatalogItem[]>([]);
+  roles = signal<any[]>([]); 
+  
+  // Paginación y Filtrado Server-Side
   isLoading = signal(true);
   error = signal<string | null>(null);
-  searchQuery = signal('');
+  
+  pageIndex = signal(0);
+  pageSize = signal(10);
+  totalElements = signal(0);
+  totalPages = signal(0);
+
+  filters = signal({
+    keyword: '',
+    docNumber: '',
+    status: '',
+    roleName: ''
+  });
+
   showCreateModal = signal(false);
   showEditModal = signal(false);
-  showDisableModal = signal(false);
-  selectedUser = signal<UserResponse | null>(null);
   selectedUserForEdit = signal<number | null>(null);
-
-  filteredUsers = computed(() => {
-    const q = this.searchQuery().toLowerCase();
-    if (!q) return this.users();
-    return this.users().filter(u =>
-      u.firstName.toLowerCase().includes(q) ||
-      u.lastName.toLowerCase().includes(q)  ||
-      u.email.toLowerCase().includes(q)     ||
-      u.username.toLowerCase().includes(q)
-    );
-  });
 
   readonly columns: GridColumnDef<UserResponse>[] = [
     helper.accessor('firstName', {
@@ -110,15 +117,20 @@ export class UserListComponent implements OnInit {
 
   ngOnInit() {
     this.catalogService.getActiveCatalogsByType('DOC_TYPE').subscribe(d => this.docTypes.set(d));
+    this.roleService.findAll().subscribe(r => {
+      this.roles.set(r.map(role => ({ name: role.roleName })));
+    });
     this.loadUsers();
   }
 
   loadUsers() {
     this.isLoading.set(true);
     this.error.set(null);
-    this.userService.findAll().subscribe({
-      next: users => {
-        this.users.set(users);
+    this.userService.findAll(this.pageIndex(), this.pageSize(), this.filters()).subscribe({
+      next: page => {
+        this.users.set(page.content);
+        this.totalElements.set(page.totalElements);
+        this.totalPages.set(page.totalPages);
         this.isLoading.set(false);
       },
       error: () => {
@@ -126,6 +138,28 @@ export class UserListComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  onPageChange(newPageIndex: number) {
+    this.pageIndex.set(newPageIndex);
+    this.loadUsers();
+  }
+
+  onPageSizeChange(newPageSize: number) {
+    this.pageSize.set(newPageSize);
+    this.pageIndex.set(0); // Regresar a la primera página al cambiar el tamaño
+    this.loadUsers();
+  }
+
+  applyFilters() {
+    this.pageIndex.set(0);
+    this.loadUsers();
+  }
+
+  clearFilters() {
+    this.filters.set({ keyword: '', docNumber: '', status: '', roleName: '' });
+    this.pageIndex.set(0);
+    this.loadUsers();
   }
 
   openCreateModal() { this.showCreateModal.set(true); }
@@ -141,44 +175,92 @@ export class UserListComponent implements OnInit {
   }
 
   openDisableModal(user: UserResponse) {
-    this.selectedUser.set(user);
-    this.showDisableModal.set(true);
-  }
-  closeDisableModal() {
-    this.selectedUser.set(null);
-    this.showDisableModal.set(false);
-  }
-
-  confirmDisable() {
-    const user = this.selectedUser();
-    if (!user) return;
-    this.userService.disable(user.personId).subscribe({
-      next: () => {
-        this.closeDisableModal();
-        this.toastService.success('Usuario deshabilitado exitosamente.');
-        this.loadUsers();
+    Swal.fire({
+      title: '¿Deshabilitar usuario?',
+      text: `¿Estás seguro de deshabilitar a ${user.firstName} ${user.lastName}? El usuario perderá acceso al sistema inmediatamente.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, deshabilitar',
+      cancelButtonText: 'Cancelar',
+      customClass: {
+        popup: 'rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 dark:bg-slate-900',
+        title: 'text-2xl font-bold text-slate-800 dark:text-white',
+        htmlContainer: 'text-slate-500 dark:text-slate-400',
+        actions: 'gap-3',
+        confirmButton: 'bg-rose-500 hover:bg-rose-600 text-white px-6 py-2.5 rounded-xl font-semibold transition-all shadow-sm',
+        cancelButton: 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 px-6 py-2.5 rounded-xl font-semibold transition-all'
       },
-      error: () => this.toastService.error('Error al deshabilitar el usuario.')
+      buttonsStyling: false
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.userService.disable(user.personId).subscribe({
+          next: () => {
+            this.toastService.success('Usuario deshabilitado exitosamente.');
+            this.loadUsers();
+          },
+          error: () => this.toastService.error('Error al deshabilitar el usuario.')
+        });
+      }
     });
   }
 
   unlockUser(user: UserResponse) {
-    this.userService.unlock(user.personId).subscribe({
-      next: () => {
-        this.toastService.success(`Se ha desbloqueado a ${user.firstName} exitosamente.`);
-        this.loadUsers();
+    Swal.fire({
+      title: '¿Desbloquear usuario?',
+      text: `¿Estás seguro de desbloquear a ${user.firstName}? Podrá volver a intentar iniciar sesión.`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, desbloquear',
+      cancelButtonText: 'Cancelar',
+      customClass: {
+        popup: 'rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 dark:bg-slate-900',
+        title: 'text-2xl font-bold text-slate-800 dark:text-white',
+        htmlContainer: 'text-slate-500 dark:text-slate-400',
+        actions: 'gap-3',
+        confirmButton: 'bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-semibold transition-all shadow-sm',
+        cancelButton: 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 px-6 py-2.5 rounded-xl font-semibold transition-all'
       },
-      error: () => this.toastService.error('Error al intentar desbloquear al usuario.')
+      buttonsStyling: false
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.userService.unlock(user.personId).subscribe({
+          next: () => {
+            this.toastService.success(`Se ha desbloqueado a ${user.firstName} exitosamente.`);
+            this.loadUsers();
+          },
+          error: () => this.toastService.error('Error al intentar desbloquear al usuario.')
+        });
+      }
     });
   }
 
   restoreUser(user: UserResponse) {
-    this.userService.restore(user.personId).subscribe({
-      next: () => {
-        this.toastService.success(`Usuario ${user.firstName} restaurado exitosamente.`);
-        this.loadUsers();
+    Swal.fire({
+      title: '¿Restaurar usuario?',
+      text: `¿Estás seguro de restaurar a ${user.firstName}? Volverá a tener acceso al sistema.`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, restaurar',
+      cancelButtonText: 'Cancelar',
+      customClass: {
+        popup: 'rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 dark:bg-slate-900',
+        title: 'text-2xl font-bold text-slate-800 dark:text-white',
+        htmlContainer: 'text-slate-500 dark:text-slate-400',
+        actions: 'gap-3',
+        confirmButton: 'bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-semibold transition-all shadow-sm',
+        cancelButton: 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 px-6 py-2.5 rounded-xl font-semibold transition-all'
       },
-      error: () => this.toastService.error('Error al restaurar al usuario.')
+      buttonsStyling: false
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.userService.restore(user.personId).subscribe({
+          next: () => {
+            this.toastService.success(`Usuario ${user.firstName} restaurado exitosamente.`);
+            this.loadUsers();
+          },
+          error: () => this.toastService.error('Error al restaurar al usuario.')
+        });
+      }
     });
   }
 

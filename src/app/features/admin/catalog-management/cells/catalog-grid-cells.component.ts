@@ -1,7 +1,7 @@
 import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CellContext } from '@tanstack/angular-table';
-import { CatalogItem } from '../../../../core/services/catalog.service';
+import { CatalogItem } from '../../../../core/models/catalog/catalog.model';
 
 @Component({
   selector: 'app-catalog-status-cell',
@@ -26,18 +26,32 @@ export class CatalogStatusCellComponent {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="flex items-center justify-end gap-2">
-      <button (click)="edit()" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-corporate-primary transition-colors flex items-center justify-center" title="Editar">
-        <i class="fa-solid fa-pen text-xs"></i>
+    <div class="flex items-center justify-end gap-1.5">
+      <button *ngIf="hasViewItems()" (click)="viewItems()" 
+              class="w-9 h-9 rounded-full text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30 transition-all duration-200 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-500/50" 
+              title="Ver Ítems">
+        <i class="fa-solid fa-list-ul text-[13px]"></i>
       </button>
+
+      <button (click)="edit()" 
+              class="w-9 h-9 rounded-full text-amber-500 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-900/30 transition-all duration-200 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-amber-500/50" 
+              title="Editar">
+        <i class="fa-solid fa-pen-to-square text-[13px]"></i>
+      </button>
+
       <button (click)="toggleStatus()" 
-              [class]="item().isActive ? 'bg-rose-50 dark:bg-rose-900/20 text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-900/40' : 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500 hover:bg-emerald-100 dark:hover:bg-emerald-900/40'"
-              class="w-8 h-8 rounded-lg transition-colors flex items-center justify-center" 
+              [class]="item().isActive 
+                ? 'text-rose-500 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-900/30 focus:ring-rose-500/50' 
+                : 'text-emerald-500 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/30 focus:ring-emerald-500/50'"
+              class="w-9 h-9 rounded-full transition-all duration-200 flex items-center justify-center focus:outline-none focus:ring-2" 
               [title]="item().isActive ? 'Desactivar' : 'Activar'">
-        <i class="fa-solid fa-power-off text-xs"></i>
+        <i class="fa-solid text-[13px]" [ngClass]="item().isActive ? 'fa-ban' : 'fa-rotate-left'"></i>
       </button>
-      <button (click)="delete()" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-rose-500 transition-colors flex items-center justify-center" title="Eliminar">
-        <i class="fa-solid fa-trash-can text-xs"></i>
+
+      <button (click)="delete()" 
+              class="w-9 h-9 rounded-full text-red-500 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30 transition-all duration-200 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-red-500/50" 
+              title="Eliminar">
+        <i class="fa-solid fa-trash-can text-[13px]"></i>
       </button>
     </div>
   `
@@ -45,6 +59,15 @@ export class CatalogStatusCellComponent {
 export class CatalogActionsCellComponent {
   readonly context = input.required<CellContext<CatalogItem, unknown>>();
   item = () => this.context().row.original;
+
+  hasViewItems() {
+    return !!(this.context().column.columnDef.meta as any)?.onViewItems;
+  }
+
+  viewItems() {
+    const meta = this.context().column.columnDef.meta as any;
+    if (meta?.onViewItems) meta.onViewItems(this.item());
+  }
 
   edit() {
     const meta = this.context().column.columnDef.meta as any;

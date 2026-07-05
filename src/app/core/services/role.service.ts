@@ -4,36 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api.models';
-
-export interface RoleResponse {
-  roleId: number;
-  roleName: string;
-  description: string;
-  permissions: PermissionResponse[];
-}
-
-export interface PermissionResponse {
-  permissionId: number;
-  permCode: string;
-  description: string;
-  permModule: string;
-}
-
-export interface RoleRequest {
-  roleName: string;
-  description?: string;
-  permissionIds?: number[];
-}
-
-export interface PermissionRequest {
-  permCode: string;
-  description?: string;
-  permModule: string;
-}
-
-export interface AssignPermissionsRequest {
-  permissionIds: number[];
-}
+import { RoleResponse, PermissionResponse, RoleRequest, PermissionRequest, AssignPermissionsRequest } from '../models/role/role.model';
 
 @Injectable({ providedIn: 'root' })
 export class RoleService {

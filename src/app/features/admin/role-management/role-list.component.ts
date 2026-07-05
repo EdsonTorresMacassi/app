@@ -1,7 +1,8 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RoleService, RoleResponse, PermissionResponse, RoleRequest, PermissionRequest } from '../../../core/services/role.service';
+import { RoleService } from '../../../core/services/role.service';
+import { RoleResponse, PermissionResponse, RoleRequest, PermissionRequest } from '../../../core/models/role/role.model';
 import { AuthService } from '../../../core/services/auth.service';
 import Swal from 'sweetalert2';
 

@@ -1,9 +1,12 @@
 import { Component, EventEmitter, Input, OnInit, Output, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { UserService, UpdateUserRequest, UserResponse } from '../../../core/services/user.service';
-import { CatalogService, CatalogItem } from '../../../core/services/catalog.service';
-import { RoleService, RoleResponse } from '../../../core/services/role.service';
+import { UserService } from '../../../core/services/user.service';
+import { UpdateUserRequest, UserResponse } from '../../../core/models/user/user.model';
+import { CatalogService } from '../../../core/services/catalog.service';
+import { CatalogItem } from '../../../core/models/catalog/catalog.model';
+import { RoleService } from '../../../core/services/role.service';
+import { RoleResponse } from '../../../core/models/role/role.model';
 import { InputComponent } from '@shared/components/form/input/input.component';
 import { SelectComponent, SelectOption } from '@shared/components/form/select/select.component';
 import { DatetimePickerComponent } from '@shared/components/form/datetime-picker/datetime-picker.component';

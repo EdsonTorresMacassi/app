@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd, RouterModule } from '@angular/router';
 import { filter } from 'rxjs/operators';
@@ -35,6 +35,7 @@ export class HeaderComponent implements OnInit {
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
       this.updateBreadcrumbs(event.urlAfterRedirects);
+      this.closeDropdown();
     });
   }
 
@@ -83,5 +84,15 @@ export class HeaderComponent implements OnInit {
   logout() {
     this.closeDropdown();
     this.authService.logout(); // Keycloak maneja la redirección
+  }
+
+  // Cerrar dropdown al hacer click fuera
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const targetElement = event.target as HTMLElement;
+    const clickedInside = targetElement.closest('.user-dropdown-container');
+    if (!clickedInside && this.isDropdownOpen()) {
+      this.closeDropdown();
+    }
   }
 }

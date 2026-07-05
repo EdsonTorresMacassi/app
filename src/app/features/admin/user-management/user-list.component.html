@@ -5,7 +5,7 @@
       Gestión de Usuarios
     </h2>
     <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-      {{ filteredUsers().length }} usuarios registrados en el sistema
+      {{ totalElements() }} usuarios registrados en el sistema
     </p>
   </div>
   <button *ngIf="authService.hasPermission('USER_WRITE')"
@@ -35,42 +35,86 @@
 <div class="rounded-xl border border-slate-200 bg-white shadow-sm
             dark:border-slate-700 dark:bg-slate-800 overflow-hidden">
 
-  <!-- Barra de herramientas -->
-  <div class="border-b border-slate-200 dark:border-slate-700 p-4 flex flex-col
-              sm:flex-row gap-3 justify-between items-center">
-    <div class="relative w-full sm:max-w-xs">
-      <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-        <i class="fa-solid fa-magnifying-glass text-sm"></i>
-      </span>
-      <input type="text"
-             placeholder="Buscar por nombre, email o usuario..."
-             [ngModel]="searchQuery()"
-             (ngModelChange)="searchQuery.set($event)"
-             class="w-full rounded-lg border border-slate-200 bg-slate-50
-                    dark:bg-slate-700 dark:border-slate-600 dark:text-white
-                    py-2.5 pl-9 pr-4 text-sm outline-none
-                    focus:border-corporate-primary focus:ring-2
-                    focus:ring-corporate-primary/20 transition-all
-                    placeholder-slate-400" />
+  <!-- Barra de Filtros Personalizados -->
+  <div class="border-b border-slate-200 dark:border-slate-700 p-4 bg-slate-50/50 dark:bg-slate-800/50">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      <!-- Filtro Búsqueda -->
+      <div class="relative w-full">
+        <label class="block text-xs font-semibold text-slate-500 mb-1">Búsqueda</label>
+        <span class="absolute left-3 top-[34px] -translate-y-1/2 text-slate-400">
+          <i class="fa-solid fa-magnifying-glass text-sm"></i>
+        </span>
+        <input type="text"
+               placeholder="Nombre, email o usuario"
+               [ngModel]="filters().keyword"
+               (ngModelChange)="filters.update(f => ({...f, keyword: $event}))"
+               class="w-full rounded-lg border border-slate-200 bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white py-2 pl-9 pr-3 text-sm outline-none focus:border-corporate-primary focus:ring-1 focus:ring-corporate-primary transition-all placeholder-slate-400" />
+      </div>
+
+      <!-- Filtro Documento -->
+      <div class="w-full">
+        <label class="block text-xs font-semibold text-slate-500 mb-1">Nro Documento</label>
+        <input type="text"
+               placeholder="Buscar documento"
+               [ngModel]="filters().docNumber"
+               (ngModelChange)="filters.update(f => ({...f, docNumber: $event}))"
+               class="w-full rounded-lg border border-slate-200 bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white py-2 px-3 text-sm outline-none focus:border-corporate-primary focus:ring-1 focus:ring-corporate-primary transition-all placeholder-slate-400" />
+      </div>
+
+      <!-- Filtro Estado -->
+      <div class="w-full">
+        <label class="block text-xs font-semibold text-slate-500 mb-1">Estado</label>
+        <select [ngModel]="filters().status"
+                (ngModelChange)="filters.update(f => ({...f, status: $event}))"
+                class="w-full rounded-lg border border-slate-200 bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white py-2 px-3 text-sm outline-none focus:border-corporate-primary focus:ring-1 focus:ring-corporate-primary transition-all cursor-pointer">
+          <option value="">Todos los estados</option>
+          <option value="ACTIVE">Activo</option>
+          <option value="INACTIVE">Inactivo</option>
+        </select>
+      </div>
+
+      <!-- Filtro Rol -->
+      <div class="w-full">
+        <label class="block text-xs font-semibold text-slate-500 mb-1">Rol de Sistema</label>
+        <select [ngModel]="filters().roleName"
+                (ngModelChange)="filters.update(f => ({...f, roleName: $event}))"
+                class="w-full rounded-lg border border-slate-200 bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white py-2 px-3 text-sm outline-none focus:border-corporate-primary focus:ring-1 focus:ring-corporate-primary transition-all cursor-pointer">
+          <option value="">Todos los roles</option>
+          <option *ngFor="let role of roles()" [value]="role.name">{{ role.name }}</option>
+        </select>
+      </div>
     </div>
-    <button (click)="loadUsers()"
-            class="flex items-center gap-2 text-sm text-slate-500
-                   hover:text-slate-700 dark:text-slate-400 dark:hover:text-white
-                   border border-slate-200 dark:border-slate-700 px-3.5 py-2.5
-                   rounded-lg transition-colors hover:bg-slate-50 dark:hover:bg-slate-700">
-      <i class="fa-solid fa-arrows-rotate text-xs"></i>
-      Actualizar
-    </button>
+    
+    <div class="mt-4 flex items-center justify-end gap-3 border-t border-slate-200 dark:border-slate-700 pt-4">
+      <button (click)="clearFilters()"
+              class="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600 shadow-sm transition-all active:scale-[0.98]">
+        <i class="fa-solid fa-eraser text-xs"></i>
+        Limpiar Filtros
+      </button>
+      <button (click)="applyFilters()"
+              class="flex items-center gap-2 rounded-lg bg-corporate-primary px-4 py-2 text-sm font-semibold text-white hover:bg-opacity-90 shadow-sm transition-all active:scale-[0.98]">
+        <i class="fa-solid fa-filter text-xs"></i>
+        Aplicar Filtros
+      </button>
+    </div>
   </div>
 
   <!-- Grid -->
   <div *ngIf="!isLoading()">
     <app-grid
-      [data]="filteredUsers()"
+      [data]="users()"
       [columns]="columns"
       ariaLabel="Listado de usuarios"
-      [pageSize]="10"
-      [pageSizeOptions]="[10, 20, 50]"
+      
+      [manualPagination]="true"
+      [externalPageCount]="totalPages()"
+      [externalRowCount]="totalElements()"
+      [pageIndex]="pageIndex()"
+      (pageIndexChange)="onPageChange($event)"
+      [pageSize]="pageSize()"
+      (pageSizeChange)="onPageSizeChange($event)"
+      [pageSizeOptions]="[10, 20, 50, 100]"
+      
       [stickyHeader]="true"
       [showPagination]="true"
       [resizableColumns]="true"
@@ -101,37 +145,3 @@
   </app-edit-user-form>
 </div>
 
-<!-- Modal confirmar deshabilitar -->
-<div *ngIf="showDisableModal()"
-     class="fixed inset-0 z-50 flex items-center justify-center bg-black/50
-            backdrop-blur-sm p-4">
-  <div class="w-full max-w-md rounded-2xl bg-white dark:bg-slate-800 shadow-2xl p-6">
-    <div class="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl
-                bg-rose-50 dark:bg-rose-900/20 mx-auto">
-      <i class="fa-solid fa-triangle-exclamation text-2xl text-rose-500"></i>
-    </div>
-    <h3 class="text-lg font-bold text-slate-800 dark:text-white text-center mb-2">
-      Deshabilitar usuario
-    </h3>
-    <p class="text-sm text-slate-500 dark:text-slate-400 text-center mb-6">
-      ¿Estás seguro de deshabilitar a
-      <span class="font-semibold text-slate-700 dark:text-slate-200">
-        {{ selectedUser()?.firstName }} {{ selectedUser()?.lastName }}
-      </span>?
-      El usuario perderá acceso al sistema inmediatamente.
-    </p>
-    <div class="flex gap-3">
-      <button (click)="closeDisableModal()"
-              class="flex-1 rounded-lg border border-slate-200 dark:border-slate-700
-                     px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300
-                     hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">
-        Cancelar
-      </button>
-      <button (click)="confirmDisable()"
-              class="flex-1 rounded-lg bg-rose-500 px-4 py-2.5 text-sm font-semibold
-                     text-white hover:bg-rose-600 transition-all shadow-sm">
-        Sí, deshabilitar
-      </button>
-    </div>
-  </div>
-</div>

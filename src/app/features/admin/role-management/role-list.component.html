@@ -65,12 +65,12 @@
         <!-- Acciones CRUD -->
         <button *ngIf="authService.hasPermission('ROLE_WRITE')"
                 (click)="openRoleForm(role)"
-                class="w-8 h-8 rounded-lg text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 flex items-center justify-center transition-all">
+                class="w-8 h-8 rounded-lg text-amber-500 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-900/20 flex items-center justify-center transition-all">
           <i class="fa-solid fa-pen-to-square text-sm"></i>
         </button>
         <button *ngIf="authService.hasPermission('ROLE_WRITE')"
                 (click)="deleteRole(role)"
-                class="w-8 h-8 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 flex items-center justify-center transition-all">
+                class="w-8 h-8 rounded-lg text-rose-500 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-900/20 flex items-center justify-center transition-all">
           <i class="fa-solid fa-trash text-sm"></i>
         </button>
         
@@ -140,12 +140,12 @@
           <div class="flex items-center gap-1">
             <button *ngIf="authService.hasPermission('ROLE_WRITE')"
                     (click)="openPermForm(perm)"
-                    class="w-7 h-7 rounded bg-slate-50 dark:bg-slate-700 text-slate-400 hover:text-amber-500 flex items-center justify-center transition-colors">
+                    class="w-7 h-7 rounded bg-slate-50 dark:bg-slate-700 text-amber-500 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 flex items-center justify-center transition-colors">
               <i class="fa-solid fa-pen-to-square text-xs"></i>
             </button>
             <button *ngIf="authService.hasPermission('ROLE_WRITE')"
                     (click)="deletePermission(perm)"
-                    class="w-7 h-7 rounded bg-slate-50 dark:bg-slate-700 text-slate-400 hover:text-rose-500 flex items-center justify-center transition-colors">
+                    class="w-7 h-7 rounded bg-slate-50 dark:bg-slate-700 text-rose-500 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 flex items-center justify-center transition-colors">
               <i class="fa-solid fa-trash text-xs"></i>
             </button>
           </div>

@@ -47,9 +47,15 @@ export class KeycloakInitService {
   }
 
   async getToken(): Promise<string | undefined> {
-    // Refresca automáticamente si expira en menos de 30 segundos
-    await this.keycloak.updateToken(30);
-    return this.keycloak.token;
+    try {
+      // Refresca automáticamente si expira en menos de 30 segundos
+      await this.keycloak.updateToken(30);
+      return this.keycloak.token;
+    } catch (error) {
+      console.warn('El Refresh Token expiró o la sesión terminó. Redirigiendo al login...');
+      await this.login();
+      return undefined;
+    }
   }
 
   getTokenParsed(): Record<string, unknown> | undefined {

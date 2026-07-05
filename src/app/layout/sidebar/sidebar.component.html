@@ -128,20 +128,5 @@
     </ng-container>
   </nav>
 
-  <!-- Footer: info del usuario -->
-  <div class="px-3 py-3 border-t border-slate-100 dark:border-slate-800">
-    <div class="flex items-center gap-3" [ngClass]="{'justify-center': isSidebarCollapsed()}">
-      <div class="w-9 h-9 min-w-[36px] rounded-lg bg-corporate-primary flex items-center justify-center text-white font-bold text-sm shadow-sm">
-        {{ currentUser()?.person?.firstName?.charAt(0)?.toUpperCase() || 'U' }}
-      </div>
-      <div *ngIf="!isSidebarCollapsed()" class="overflow-hidden">
-        <p class="text-sm font-semibold text-slate-800 dark:text-white truncate leading-tight">
-          {{ currentUser()?.person?.firstName }} {{ currentUser()?.person?.lastName }}
-        </p>
-        <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate uppercase tracking-wide mt-0.5">
-          {{ currentUser()?.roles?.[0] || 'Usuario' }}
-        </p>
-      </div>
-    </div>
-  </div>
+
 </aside>

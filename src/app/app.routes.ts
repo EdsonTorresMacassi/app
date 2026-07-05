@@ -34,6 +34,13 @@ export const routes: Routes = [
         // Sin data.preload — no se precarga (ruta de primer login)
       },
       {
+        path: 'waiting-room',
+        title: 'Cuenta en Revisión | Sistema',
+        loadComponent: () =>
+          import('./features/auth/waiting-room/waiting-room.component')
+            .then(m => m.WaitingRoomComponent)
+      },
+      {
         path: 'dashboard',
         title: 'Dashboard | Sistema',
         data: { preload: true },
